@@ -4,10 +4,10 @@ class_name JumpCharging
 @onready var player: BoardController = get_parent().get_parent()
 
 func enter_state() -> void:
-	pass
+	print_debug("Enter Jump_Charging")
 
 func exit_state() -> void:
-	pass
+	print_debug("Exit Jump_Charging")
 
 func physics_process(_delta: float) -> void:
-	pass
+	player.move_and_slide()

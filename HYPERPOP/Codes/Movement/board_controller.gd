@@ -155,7 +155,7 @@ func _physics_process(delta: float) -> void:
 	_update_speed(delta)
 	_update_jump_state()
 	_update_air_pitch(delta)
-	_update_loco_state()
+	#_update_loco_state()
 
 	# 2. Physics & Momentum
 	_apply_slope_momentum(delta)
@@ -165,7 +165,7 @@ func _physics_process(delta: float) -> void:
 
 	# Wall Run Detection
 	_detect_wall_running()
-	_update_loco_state()
+	#_update_loco_state()
 
 	if was_wall_running and not is_wall_running:
 		_on_wall_run_exit()
@@ -230,6 +230,8 @@ func _physics_process(delta: float) -> void:
 
 # =================================================
 # LOCOMOTION STATE RESOLVER
+# Do not use
+# TODO: Move them to what happen when they enter state
 func _update_loco_state() -> void:
 	if is_wall_running:
 		loco_state_machine.change_state("Wall_Running")
