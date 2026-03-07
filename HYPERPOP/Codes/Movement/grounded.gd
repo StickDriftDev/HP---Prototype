@@ -5,10 +5,12 @@ class_name Grounded
 @onready var player: BoardController = get_parent().get_parent()
 
 # =================================================
+# STATE
+
+# =================================================
 # CENTRALISED INPUT STATE — populated once per frame in _read_input()
 var inp_throttle: float = 0.0
 var inp_brake: float = 0.0
-var inp_steer: float = 0.0
 var inp_pitch: float = 0.0
 
 func enter_state() -> void:
@@ -30,9 +32,10 @@ func physics_process(delta: float) -> void:
 func _read_input(delta: float) -> void:
 	inp_throttle           = Input.get_action_strength("throttle")
 	inp_brake              = Input.get_action_strength("brake")
-	inp_steer              = Input.get_action_strength("left") - Input.get_action_strength("right")
+	player.inp_steer       = Input.get_action_strength("left") - Input.get_action_strength("right")
 	inp_pitch              = inp_throttle - inp_brake
-	player.smoothed_input_x = lerp(player.smoothed_input_x, inp_steer, player.rotation_smoothing * delta)
+	
+	player.smoothed_input_x = lerp(player.smoothed_input_x, player.inp_steer, player.rotation_smoothing * delta)
 
 # =================================================
 # SPEED

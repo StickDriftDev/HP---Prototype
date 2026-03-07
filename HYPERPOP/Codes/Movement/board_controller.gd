@@ -115,9 +115,9 @@ var grounded_time: float = 0.0
 #var inp_throttle: float = 0.0
 #var inp_brake: float = 0.0
 var inp_steer: float = 0.0
-var inp_drift: bool = false
-var inp_jump_held: bool = false
-var inp_jump_just_released: bool = false
+#var inp_drift: bool = false
+#var inp_jump_held: bool = false
+#var inp_jump_just_released: bool = false
 var inp_pitch: float = 0.0
 
 # =================================================
@@ -147,13 +147,13 @@ func _ready() -> void:
 # MAIN LOOP
 func _physics_process(delta: float) -> void:
 	# 1. Update State & Inputs
-	_read_input(delta)
+	#_read_input(delta)
 	if PlayerSFX:
 		PlayerSFX._update_jump_charge(delta, is_charging_jump, is_wall_running)
 
-	_update_drift(delta)
+	#_update_drift(delta)
 	_update_speed(delta)
-	_update_jump_state()
+	#_update_jump_state()
 	_update_air_pitch(delta)
 	#_update_loco_state()
 
@@ -269,32 +269,32 @@ func _surface_is_ignored() -> bool:
 
 # =================================================
 # INPUT — single source of truth, pure reads only
-func _read_input(delta: float) -> void:
+#func _read_input(delta: float) -> void:
 	#inp_throttle           = Input.get_action_strength("throttle")
 	#inp_brake              = Input.get_action_strength("brake")
 	#inp_steer              = Input.get_action_strength("left") - Input.get_action_strength("right")
-	inp_drift              = Input.is_action_pressed("drift")
-	inp_jump_held          = Input.is_action_pressed("Jump")
-	inp_jump_just_released = Input.is_action_just_released("Jump")
+	#inp_drift              = Input.is_action_pressed("drift")
+	#inp_jump_held          = Input.is_action_pressed("Jump")
+	#inp_jump_just_released = Input.is_action_just_released("Jump")
 	#inp_pitch              = inp_throttle - inp_brake
 
-	smoothed_input_x = lerp(smoothed_input_x, inp_steer, rotation_smoothing * delta)
+	#smoothed_input_x = lerp(smoothed_input_x, inp_steer, rotation_smoothing * delta)
 
 # =================================================
 # JUMP STATE
-func _update_jump_state() -> void:
-	var can_jump = is_on_floor()
-
-	if is_charging_jump and inp_jump_just_released:
-		_dbg_log("EVENT: Jump launched — charge: %.2f" % (PlayerSFX.current_jump_charge if PlayerSFX else 1.0))
-		_execute_jump()
-		is_charging_jump = false
-		return
-
-	if can_jump and inp_jump_held:
-		is_charging_jump = true
-	elif not inp_jump_held:
-		is_charging_jump = false
+#func _update_jump_state() -> void:
+	#var can_jump = is_on_floor()
+#
+	#if is_charging_jump and inp_jump_just_released:
+		#_dbg_log("EVENT: Jump launched — charge: %.2f" % (PlayerSFX.current_jump_charge if PlayerSFX else 1.0))
+		#_execute_jump()
+		#is_charging_jump = false
+		#return
+#
+	#if can_jump and inp_jump_held:
+		#is_charging_jump = true
+	#elif not inp_jump_held:
+		#is_charging_jump = false
 
 # =================================================
 # AIR CONTROLS (PITCH)
@@ -307,23 +307,23 @@ func _update_air_pitch(delta: float) -> void:
 
 # =================================================
 # JUMP
-func _execute_jump() -> void:
-	var charge_val: float = PlayerSFX.current_jump_charge if PlayerSFX else 1.0
-	var force: float = lerp(min_jump_force, max_jump_force, charge_val)
-
-	if is_wall_running && wall_normal != Vector3.ZERO:
-		velocity += wall_normal * force * 1.4
-		velocity.y += force * 0.5
-		is_wall_running = false
-		_on_wall_run_exit()
-		_dbg_log("EVENT: Wall jump — force: %.1f, wall_normal: %s" % [force, wall_normal])
-	else:
-		velocity += Vector3.UP * force
-		_dbg_log("EVENT: Standard jump — force: %.1f" % force)
-
-	if PlayerSFX:
-		PlayerSFX.play_jump_launch()
-		PlayerSFX.current_jump_charge = 0.0
+#func _execute_jump() -> void:
+	#var charge_val: float = PlayerSFX.current_jump_charge if PlayerSFX else 1.0
+	#var force: float = lerp(min_jump_force, max_jump_force, charge_val)
+#
+	#if is_wall_running && wall_normal != Vector3.ZERO:
+		#velocity += wall_normal * force * 1.4
+		#velocity.y += force * 0.5
+		#is_wall_running = false
+		#_on_wall_run_exit()
+		#_dbg_log("EVENT: Wall jump — force: %.1f, wall_normal: %s" % [force, wall_normal])
+	#else:
+		#velocity += Vector3.UP * force
+		#_dbg_log("EVENT: Standard jump — force: %.1f" % force)
+#
+	#if PlayerSFX:
+		#PlayerSFX.play_jump_launch()
+		#PlayerSFX.current_jump_charge = 0.0
 
 func _handle_landing(delta: float) -> void:
 	if !is_on_floor():
@@ -336,28 +336,28 @@ func _handle_landing(delta: float) -> void:
 		_dbg_log("EVENT: Landed — air_time: %.2fs, speed: %.1f" % [air_time, current_speed])
 		if PlayerSFX: PlayerSFX.play_land()
 
-# =================================================
-# DRIFT & DASH
-func _update_drift(delta: float) -> void:
-	if !is_on_floor() || current_speed < drift_min_speed:
-		is_drifting = false
-		drift_charge = 0.0
-		if PlayerSFX: PlayerSFX.stop_drift_loop()
-		return
-
-	is_drifting = inp_drift and abs(inp_steer) > 0.1
-	if is_drifting:
-		current_speed = move_toward(current_speed, 0.0, drift_deceleration_rate * delta)
-		drift_charge = move_toward(drift_charge, 1.0, delta / drift_max_charge_time)
-		if PlayerSFX: PlayerSFX.play_drift_loop()
-	else:
-		if PlayerSFX: PlayerSFX.stop_drift_loop()
-		if drift_charge >= 1.0:
-			dash_velocity = current_speed + drift_dash_force
-			dash_timer = drift_dash_duration
-			_dbg_log("EVENT: Drift DASH released — dash_velocity: %.1f" % dash_velocity)
-			if PlayerSFX: PlayerSFX.play_dash()
-			drift_charge = 0.0
+## =================================================
+## DRIFT & DASH
+#func _update_drift(delta: float) -> void:
+	#if !is_on_floor() || current_speed < drift_min_speed:
+		#is_drifting = false
+		#drift_charge = 0.0
+		#if PlayerSFX: PlayerSFX.stop_drift_loop()
+		#return
+#
+	#is_drifting = inp_drift and abs(inp_steer) > 0.1
+	#if is_drifting:
+		#current_speed = move_toward(current_speed, 0.0, drift_deceleration_rate * delta)
+		#drift_charge = move_toward(drift_charge, 1.0, delta / drift_max_charge_time)
+		#if PlayerSFX: PlayerSFX.play_drift_loop()
+	#else:
+		#if PlayerSFX: PlayerSFX.stop_drift_loop()
+		#if drift_charge >= 1.0:
+			#dash_velocity = current_speed + drift_dash_force
+			#dash_timer = drift_dash_duration
+			#_dbg_log("EVENT: Drift DASH released — dash_velocity: %.1f" % dash_velocity)
+			#if PlayerSFX: PlayerSFX.play_dash()
+			#drift_charge = 0.0
 
 # =================================================
 # SPEED

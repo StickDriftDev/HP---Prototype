@@ -3,6 +3,14 @@ class_name Airborne
 
 @onready var player: BoardController = get_parent().get_parent()
 
+
+# =================================================
+# STATE
+
+# =================================================
+# CENTRALISED INPUT STATE — populated once per frame in _read_input()
+
+
 func enter_state() -> void:
 	print_debug("Enter Airborne")
 
