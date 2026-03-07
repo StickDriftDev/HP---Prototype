@@ -112,8 +112,8 @@ var grounded_time: float = 0.0
 
 # =================================================
 # CENTRALISED INPUT STATE — populated once per frame in _read_input()
-var inp_throttle: float = 0.0
-var inp_brake: float = 0.0
+#var inp_throttle: float = 0.0
+#var inp_brake: float = 0.0
 var inp_steer: float = 0.0
 var inp_drift: bool = false
 var inp_jump_held: bool = false
@@ -270,13 +270,13 @@ func _surface_is_ignored() -> bool:
 # =================================================
 # INPUT — single source of truth, pure reads only
 func _read_input(delta: float) -> void:
-	inp_throttle           = Input.get_action_strength("throttle")
-	inp_brake              = Input.get_action_strength("brake")
-	inp_steer              = Input.get_action_strength("left") - Input.get_action_strength("right")
+	#inp_throttle           = Input.get_action_strength("throttle")
+	#inp_brake              = Input.get_action_strength("brake")
+	#inp_steer              = Input.get_action_strength("left") - Input.get_action_strength("right")
 	inp_drift              = Input.is_action_pressed("drift")
 	inp_jump_held          = Input.is_action_pressed("Jump")
 	inp_jump_just_released = Input.is_action_just_released("Jump")
-	inp_pitch              = inp_throttle - inp_brake
+	#inp_pitch              = inp_throttle - inp_brake
 
 	smoothed_input_x = lerp(smoothed_input_x, inp_steer, rotation_smoothing * delta)
 
@@ -367,30 +367,34 @@ func _update_speed(delta: float) -> void:
 		current_speed = dash_velocity
 		return
 	
+	## Jump_Charging State
 	#loco_state == LocomotionState.JUMP_CHARGING:
-	if loco_state_machine.get_current_state() == JumpCharging:
-		current_speed = lerp(current_speed, 0.0, jump_charge_drag * delta)
-		return
+	#if loco_state_machine.get_current_state() == JumpCharging:
+		#current_speed = lerp(current_speed, 0.0, jump_charge_drag * delta)
+		#return
 
+	## Drifting State
 	#loco_state == LocomotionState.DRIFTING:
-	if loco_state_machine.get_current_state() == Drifting:
-		return
+	#if loco_state_machine.get_current_state() == Drifting:
+		#return
 
-	if inp_throttle > 0:
-		current_speed = move_toward(current_speed, max_speed, acceleration * delta)
-	elif inp_brake > 0:
-		current_speed = move_toward(current_speed, 0.0, braking * delta)
-	else:
-		var drag: float = friction if is_on_floor() else air_drag
-		current_speed = move_toward(current_speed, 0.0, drag * delta)
+	## Grounded State
+	#if inp_throttle > 0:
+		#current_speed = move_toward(current_speed, max_speed, acceleration * delta)
+	#elif inp_brake > 0:
+		#current_speed = move_toward(current_speed, 0.0, braking * delta)
+	#else:
+		#var drag: float = friction if is_on_floor() else air_drag
+		#current_speed = move_toward(current_speed, 0.0, drag * delta)
 
-	if !is_on_floor() && !is_wall_running:
-		var dive_factor: float = sin(current_air_pitch)
-		if dive_factor > 0:
-			current_speed += dive_speed_gain * dive_factor * delta
-		else:
-			current_speed -= pull_up_speed_loss * abs(dive_factor) * delta
-		current_speed = max(current_speed, 0.0)
+	## Airborne State
+	#if !is_on_floor() && !is_wall_running:
+		#var dive_factor: float = sin(current_air_pitch)
+		#if dive_factor > 0:
+			#current_speed += dive_speed_gain * dive_factor * delta
+		#else:
+			#current_speed -= pull_up_speed_loss * abs(dive_factor) * delta
+		#current_speed = max(current_speed, 0.0)
 
 	current_speed = clamp(current_speed, 0.0, max_velocity)
 

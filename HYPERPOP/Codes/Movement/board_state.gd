@@ -1,3 +1,4 @@
+## BoardState for BoardStateMachine
 extends Node
 class_name BoardState
 
@@ -16,10 +17,10 @@ func enter_state() -> void:
 func exit_state() -> void:
 	pass
 
-# Not needed as BoardController is not using func _process
-# If BoardController has func _process, use with BoardStateMachine func update
-func update(_delta: float) -> void:
+func physics_process(delta: float) -> void:
 	pass
 
-func physics_process(_delta: float) -> void:
+# =================================================
+# INPUT — single source of truth, pure reads only
+func _read_input(delta: float) -> void:
 	pass

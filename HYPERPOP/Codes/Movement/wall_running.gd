@@ -9,5 +9,19 @@ func enter_state() -> void:
 func exit_state() -> void:
 	print_debug("Exit Wall_Running")
 
-func physics_process(_delta: float) -> void:
+func physics_process(delta: float) -> void:
+	# 1. Update State & Inputs
+	_read_input(delta)
+	
+	_update_speed(delta)
 	player.move_and_slide()
+
+# =================================================
+# INPUT — single source of truth, pure reads only
+func _read_input(delta: float) -> void:
+	pass
+
+# =================================================
+# SPEED
+func _update_speed(delta: float) -> void:
+	pass

@@ -18,13 +18,6 @@ func _ready() -> void:
 		initial_state.enter_state()
 		current_state = initial_state
 
-# Not needed as BoardController is not using func _process
-# If BoardController has func _process, use with BoardState func update
-func _process(delta: float) -> void:
-	if current_state:
-		current_state.update(delta)
-
-
 func _physics_process(delta: float) -> void:
 	if current_state:
 		current_state.physics_process(delta)
