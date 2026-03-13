@@ -1,0 +1,53 @@
+[gd_scene format=3 uid="uid://dpg24kp8whij4"]
+
+[ext_resource type="Script" uid="uid://coo3y0hvejy6t" path="res://HYPERPOP/Codes/Pause Ui/pause_menu.gd" id="1_1wur0"]
+
+[node name="PauseMenu" type="Control" unique_id=83343215]
+process_mode = 3
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_1wur0")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="." unique_id=1545260105]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -35.0
+offset_top = -50.5
+offset_right = 35.0
+offset_bottom = 50.5
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 20
+
+[node name="Label" type="Label" parent="VBoxContainer" unique_id=1735165912]
+layout_mode = 2
+theme_override_font_sizes/font_size = 72
+text = "Pause"
+horizontal_alignment = 1
+
+[node name="Resume" type="Button" parent="VBoxContainer" unique_id=2005506831]
+layout_mode = 2
+theme_override_font_sizes/font_size = 32
+text = "Resume"
+
+[node name="Restart" type="Button" parent="VBoxContainer" unique_id=1064954399]
+layout_mode = 2
+theme_override_font_sizes/font_size = 32
+text = "Restart"
+
+[node name="Quit" type="Button" parent="VBoxContainer" unique_id=1101876956]
+layout_mode = 2
+theme_override_font_sizes/font_size = 32
+text = "Quit"
+
+[connection signal="pressed" from="VBoxContainer/Resume" to="." method="_on_resume_pressed"]
+[connection signal="pressed" from="VBoxContainer/Restart" to="." method="_on_restart_pressed"]
+[connection signal="pressed" from="VBoxContainer/Quit" to="." method="_on_quit_pressed"]
