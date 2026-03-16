@@ -271,7 +271,7 @@ func _read_input(delta: float) -> void:
 	inp_steer              = Input.get_action_strength("left") - Input.get_action_strength("right")
 	inp_drift              = Input.is_action_pressed("drift")
 	inp_jump_held          = Input.is_action_pressed("Jump")
-	inp_boost              = Input.is_action_just_pressed("boost") 
+	inp_boost              = Input.is_action_just_pressed("Boost") 
 	inp_pitch              = inp_throttle - inp_brake
 	
 	smoothed_input_x = lerp(smoothed_input_x, inp_steer, rotation_smoothing * delta)
