@@ -31,6 +31,8 @@ func _update_loco_state() -> void:
 			loco_state_machine.change_state("Jump_Charging")
 		elif player.drift_input and player.current_speed >= player.drift_min_speed:
 			loco_state_machine.change_state("Drifting")
+		elif player.inp_boost and player.current_boost_segments >= 1.0 and not player.is_boosting:
+			loco_state_machine.change_state("Boost")
 		else:
 			return
 	else:

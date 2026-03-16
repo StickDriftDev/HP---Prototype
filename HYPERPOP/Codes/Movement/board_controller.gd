@@ -192,7 +192,7 @@ func _physics_process(delta: float) -> void:
 	_read_input(delta)
 	
 	# # Process Boost first to influence speed
-	_handle_boost_system(delta)
+	#_handle_boost_system(delta)
 	
 	_update_air_pitch(delta)
 	_update_speed(delta)
@@ -271,41 +271,12 @@ func _read_input(delta: float) -> void:
 	inp_steer              = Input.get_action_strength("left") - Input.get_action_strength("right")
 	inp_drift              = Input.is_action_pressed("drift")
 	inp_jump_held          = Input.is_action_pressed("Jump")
-	inp_boost              = Input.is_action_just_pressed("boost") 
+	inp_boost              = Input.is_action_just_pressed("Boost") 
 	inp_pitch              = inp_throttle - inp_brake
 	
 	smoothed_input_x = lerp(smoothed_input_x, inp_steer, rotation_smoothing * delta)
 	input_dir.x = inp_steer
 
-# =================================================
-# BOOST SYSTEM CORE
-func _handle_boost_system(delta: float) -> void:
-	# 1. Gauge Regeneration (Drift vs Passive)
-	if is_drifting:
-		current_boost_segments += drift_boost_regen * delta
-	else:
-		current_boost_segments += passive_boost_regen * delta
-		
-	# Limits to not exceed the maximum (ex: 3.0)
-	current_boost_segments = clamp(current_boost_segments, 0.0, float(max_boost_segments))
-	
-	# 2. Boost Activation
-	# Requires you to have at least 1.0 integer to activate, and cannot be in boost yet
-	if inp_boost and current_boost_segments >= 1.0 and not is_boosting:
-		current_boost_segments -= 1.0 # Consome exato 1 segmento
-		is_boosting = true
-		boost_timer = boost_duration_per_segment
-		
-		current_speed = max(current_speed, boost_speed_target * 0.7)
-		
-		if PlayerSFX and PlayerSFX.has_method("play_boost"):
-			PlayerSFX.play_boost()
-
-	# 3. Duration management
-	if is_boosting:
-		boost_timer -= delta
-		if boost_timer <= 0.0:
-			is_boosting = false
 
 # =================================================
 # SPEED & MOVEMENT

@@ -28,7 +28,7 @@ func physics_process(delta: float) -> void:
 	_update_drift(delta)
 	
 	# 3. Final Movement
-	_update_speed(delta)
+	_handle_boost_system(delta)
 	player.move_and_slide()
 
 
@@ -46,11 +46,6 @@ func _update_loco_state() -> void:
 	if not player.drift_input:
 		_handle_drift_dash()
 		loco_state_machine.change_state("Grounded")
-
-# =================================================
-# SPEED
-func _update_speed(delta: float) -> void:
-	pass
 
 
 # =================================================
@@ -74,3 +69,15 @@ func _handle_drift_dash() -> void:
 		
 		if player.PlayerSFX: 
 			player.PlayerSFX.play_dash()
+
+# =================================================
+# BOOST SYSTEM CORE
+func _handle_boost_system(delta: float) -> void:
+	# 1. Gauge Regeneration (Drift vs Passive)
+	if player.is_drifting:
+		player.current_boost_segments += player.drift_boost_regen * delta
+	else:
+		player.current_boost_segments += player.passive_boost_regen * delta
+		
+	# Limits to not exceed the maximum (ex: 3.0)
+	player.current_boost_segments = clamp(player.current_boost_segments, 0.0, float(player.max_boost_segments))

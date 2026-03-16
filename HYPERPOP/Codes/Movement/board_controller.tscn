@@ -16,6 +16,7 @@
 [ext_resource type="Script" uid="uid://bo840wx8beqi3" path="res://start_ik.gd" id="5_34dk1"]
 [ext_resource type="Script" uid="uid://daih5engufvr8" path="res://HYPERPOP/Codes/Movement/wall_running.gd" id="6_hwsgt"]
 [ext_resource type="Texture2D" uid="uid://bdmfkut4twad4" path="res://HYPERPOP/Assets/Characters/Ryder/RyderBody.png" id="7_yajaa"]
+[ext_resource type="Script" uid="uid://cwgdi870t4x25" path="res://HYPERPOP/Codes/Movement/boost.gd" id="8_mlmxm"]
 [ext_resource type="Texture2D" uid="uid://c1k2dyy2iqsi6" path="res://HYPERPOP/Assets/Characters/Ryder/HairHighlight.png" id="9_ea84n"]
 [ext_resource type="Texture2D" uid="uid://cmkqyv20jputr" path="res://HYPERPOP/Assets/Characters/Ryder/RyderFace.png" id="10_kqmo1"]
 [ext_resource type="Texture2D" uid="uid://dv3wl4v30jfi" path="res://HYPERPOP/Assets/Characters/Ryder/m_msk002_m_alb.png" id="11_skyvc"]
@@ -9362,7 +9363,7 @@ size = Vector3(1.21, 0.185, 3.635)
 transparency = 1
 albedo_color = Color(0.3019608, 0.5411765, 0.9254902, 0.25882354)
 
-[node name="BoardController" type="CharacterBody3D" unique_id=723564920 node_paths=PackedStringArray("loco_state_machine", "board_target", "Rider_Model", "Cam", "PlayerSFX", "sfx_jump_launch", "sfx_jump_charge_loop", "sfx_land", "sfx_drift_loop", "sfx_dash", "sfx_engine_loop", "sfx_brake")]
+[node name="BoardController" type="CharacterBody3D" unique_id=723564920 node_paths=PackedStringArray("loco_state_machine", "board_target", "Rider_Model", "Cam", "PlayerSFX")]
 floor_block_on_wall = false
 floor_max_angle = 1.5707964
 script = ExtResource("1_mkhe7")
@@ -9371,13 +9372,6 @@ board_target = NodePath("RyderGear")
 Rider_Model = NodePath("RyderGear/RyderModel")
 Cam = NodePath("Camera3D")
 PlayerSFX = NodePath("Sound")
-sfx_jump_launch = NodePath("Sound/Sound_Jump")
-sfx_jump_charge_loop = NodePath("Sound/Sound_Drift")
-sfx_land = NodePath("Sound/Sound_Land")
-sfx_drift_loop = NodePath("Sound/Sound_Drift")
-sfx_dash = NodePath("Sound/Sound_Dash")
-sfx_engine_loop = NodePath("Sound/Sound_Engine")
-sfx_brake = NodePath("Sound/Sound_Brake")
 
 [node name="BoardStateMachine" type="Node" parent="." unique_id=1535564651 node_paths=PackedStringArray("initial_state")]
 script = ExtResource("2_sek2j")
@@ -9397,6 +9391,10 @@ script = ExtResource("2_vjvt4")
 
 [node name="Wall_Running" type="Node" parent="BoardStateMachine" unique_id=525395192]
 script = ExtResource("6_hwsgt")
+
+[node name="Boost" type="Node" parent="BoardStateMachine" unique_id=821243280]
+script = ExtResource("8_mlmxm")
+metadata/_custom_type_script = "uid://covyts21cgpi6"
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=1370903136]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.35943604, 0.07601929)
