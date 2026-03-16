@@ -5,6 +5,7 @@ class_name BoardController
 # LOCOMOTION STATE
 @export var loco_state_machine: Node 
 
+# =================================================
 # CONFIG — MOTION
 @export_category("Motion")
 @export var max_speed: float = 150.0
@@ -91,6 +92,16 @@ class_name BoardController
 @export var drift_deceleration_rate: float = 10.0
 
 # =================================================
+# CONFIG — BOOST 
+@export_category("Boost System")
+@export var max_boost_segments: int = 3
+@export var boost_speed_target: float = 220.0
+@export var boost_duration_per_segment: float = 1.2
+@export var boost_accel_multiplier: float = 4.0
+@export var passive_boost_regen: float = 0.05 # Natural slow regen
+@export var drift_boost_regen: float = 0.6 # Gain fast boost when drifting
+
+# =================================================
 # SYSTEMS
 @export_category("Systems")
 @export var Cam: Node 
@@ -104,7 +115,7 @@ class_name BoardController
 var _debug_console_throttle: float = 0.0
 
 # =================================================
-# STATE
+# STATE VARIABLES
 var current_speed: float = 0.0
 var input_dir: Vector2 = Vector2.ZERO
 var smoothed_input_x: float = 0.0
@@ -128,9 +139,13 @@ var current_jump_charge: float = 0.0
 var base_fov: float = 75.0
 var drift_input: bool = false
 var can_jump: bool = false
-var current_shake: float = 0.0 # Estado interno da vibração
+var current_shake: float = 0.0
 
-# =================================================
+# BOOST STATE (Exposed for the UI to read easily)
+var current_boost_segments: float = 3.0 
+var is_boosting: bool = false
+var boost_timer: float = 0.0
+
 # CENTRALISED INPUT STATE
 var inp_throttle: float = 0.0
 var inp_brake: float = 0.0
@@ -139,6 +154,7 @@ var inp_drift: bool = false
 var inp_jump_held: bool = false
 var inp_jump_just_released: bool = false
 var inp_pitch: float = 0.0
+var inp_boost: bool = false
 
 # =================================================
 # READY
@@ -147,6 +163,7 @@ func _ready() -> void:
 		base_fov = Cam.fov
 	if loco_state_machine == null: 
 		push_error("Loco State Machine is null, add BoardStateMachine to this player")
+	
 	floor_max_angle = deg_to_rad(130)
 	floor_snap_length = snap_length
 	floor_stop_on_slope = false
@@ -173,6 +190,10 @@ func _physics_process(delta: float) -> void:
 		PlayerSFX._update_jump_charge(delta, is_charging_jump, is_wall_running)
 		
 	_read_input(delta)
+	
+	# # Process Boost first to influence speed
+	#_handle_boost_system(delta)
+	
 	_update_air_pitch(delta)
 	_update_speed(delta)
 	
@@ -231,27 +252,8 @@ func _physics_process(delta: float) -> void:
 
 	_handle_landing(delta)
 	_update_board_visual(delta)
-	
-	# --- SISTEMA DE CAMERA (FOV SUAVE + VIBRAÇÃO) ---
-	if Cam and Cam is Camera3D:
-		# FOV Dinâmico
-		var dashing = dash_timer > 0.0
-		var target_fov = base_fov + (dash_fov_boost if dashing else 0.0)
-		var current_fov_speed = fov_lerp_speed if dashing else fov_return_speed
-		Cam.fov = lerp(Cam.fov, target_fov, current_fov_speed * delta)
-		
-		# Vibração (Shake)
-		if dashing:
-			current_shake = dash_shake_intensity
-		
-		if current_shake > 0:
-			Cam.h_offset = randf_range(-current_shake, current_shake)
-			Cam.v_offset = randf_range(-current_shake, current_shake)
-			current_shake = move_toward(current_shake, 0.0, delta * 1.5) # Decaimento suave
-		else:
-			Cam.h_offset = 0
-			Cam.v_offset = 0
-	# -----------------------------------------------
+	_update_debug_ui()
+	_update_camera_effects(delta)
 
 	if PlayerSFX and PlayerSFX.has_method("_update_engine_audio"):
 		PlayerSFX._update_engine_audio(current_speed, max_speed)
@@ -262,17 +264,86 @@ func _physics_process(delta: float) -> void:
 		last_ground_position = global_position
 		
 # =================================================
-# INPUT & JUMP
+# INPUT
 func _read_input(delta: float) -> void:
 	inp_throttle           = Input.get_action_strength("throttle")
 	inp_brake              = Input.get_action_strength("brake")
 	inp_steer              = Input.get_action_strength("left") - Input.get_action_strength("right")
 	inp_drift              = Input.is_action_pressed("drift")
 	inp_jump_held          = Input.is_action_pressed("Jump")
+	inp_boost              = Input.is_action_just_pressed("Boost") 
 	inp_pitch              = inp_throttle - inp_brake
+	
 	smoothed_input_x = lerp(smoothed_input_x, inp_steer, rotation_smoothing * delta)
 	input_dir.x = inp_steer
 
+
+# =================================================
+# SPEED & MOVEMENT
+func _update_speed(delta: float) -> void:
+	if dash_timer > 0.0:
+		dash_timer -= delta
+		current_speed = dash_velocity
+	elif is_boosting:
+		# Accelerate hard towards the boost target
+		current_speed = move_toward(current_speed, boost_speed_target, acceleration * boost_accel_multiplier * delta)
+	elif is_charging_jump:
+		current_speed = lerp(current_speed, 0.0, jump_charge_drag * delta)
+	elif is_on_floor():
+		if inp_throttle > 0: 
+			current_speed = move_toward(current_speed, max_speed, acceleration * delta)
+		elif inp_brake > 0: 
+			current_speed = move_toward(current_speed, 0.0, braking * delta)
+		else: 
+			current_speed = move_toward(current_speed, 0.0, friction * delta)
+	else:
+		current_speed = move_toward(current_speed, 0.0, air_drag * 0.05 * delta)
+			
+	# Dynamic clamp: If boost is active, limit is higher
+	var current_cap = boost_speed_target if is_boosting else max_speed
+	if dash_timer <= 0.0:
+		current_speed = clamp(current_speed, 0.0, current_cap)
+
+func _apply_horizontal_movement(_delta: float) -> void:
+	if is_wall_running: return
+	var fwd = -global_transform.basis.z
+	var rgt = global_transform.basis.x
+	var target_vel = (fwd * current_speed) if is_on_floor() else (fwd * current_speed) + (rgt * smoothed_input_x * air_lateral_force)
+	velocity.x = target_vel.x
+	velocity.z = target_vel.z
+
+# =================================================
+# PHYSICS & ROTATION
+func _apply_rotation(delta: float) -> void:
+	var turn_scale = 1.0
+	if is_charging_jump: turn_scale = 0.5
+	elif is_drifting: turn_scale *= drift_turn_multiplier
+	elif !is_on_floor(): turn_scale = air_rotation_multiplier
+	
+	# Boost deixa a prancha mais "dura" de virar
+	if is_boosting: turn_scale *= 0.6 
+	
+	rotate_object_local(Vector3.UP, smoothed_input_x * rotation_speed * turn_scale * delta)
+
+func _apply_slope_momentum(delta: float) -> void:
+	if !is_on_floor(): return
+	var n = get_floor_normal()
+	var slope = 1.0 - n.dot(Vector3.UP)
+	if slope < 0.02: return
+	current_speed += Vector3.DOWN.slide(n).normalized().dot(-global_transform.basis.z) * slope_accel_strength * slope * delta
+
+func _apply_surface_gravity(delta: float) -> void:
+	var g = ProjectSettings.get_setting("physics/3d/default_gravity") * gravity_mul
+	if is_wall_running: g *= wall_gravity_mul
+	var sn = wall_normal if is_wall_running else (last_surface_normal if is_on_floor() else Vector3.UP)
+	velocity += -sn * g * delta
+
+func _apply_floor_stick(delta: float) -> void:
+	var sn = wall_normal if is_wall_running else last_surface_normal
+	velocity += -sn * (wall_stick_force if is_wall_running else stick_force) * delta
+
+# =================================================
+# JUMPING
 func _execute_jump() -> void:
 	var charge_val: float = PlayerSFX.current_jump_charge if PlayerSFX and "current_jump_charge" in PlayerSFX else 1.0
 	var force = lerp(min_jump_force, max_jump_force, charge_val)
@@ -299,58 +370,7 @@ func _handle_landing(_delta: float) -> void:
 				PlayerSFX.play_land()
 
 # =================================================
-# SPEED & MOVEMENT
-func _update_speed(delta: float) -> void:
-	if dash_timer > 0.0:
-		dash_timer -= delta
-		current_speed = dash_velocity
-	elif is_charging_jump:
-		current_speed = lerp(current_speed, 0.0, jump_charge_drag * delta)
-	elif is_on_floor():
-		if inp_throttle > 0: current_speed = move_toward(current_speed, max_speed, acceleration * delta)
-		elif inp_brake > 0: current_speed = move_toward(current_speed, 0.0, braking * delta)
-		else: current_speed = move_toward(current_speed, 0.0, friction * delta)
-	else:
-		current_speed = move_toward(current_speed, 0.0, air_drag * 0.05 * delta)
-			
-	current_speed = clamp(current_speed, 0.0, max_speed)
-
-func _apply_horizontal_movement(delta: float) -> void:
-	if is_wall_running: return
-	var fwd = -global_transform.basis.z
-	var rgt = global_transform.basis.x
-	var target_vel = (fwd * current_speed) if is_on_floor() else (fwd * current_speed) + (rgt * smoothed_input_x * air_lateral_force)
-	velocity.x = target_vel.x
-	velocity.z = target_vel.z
-
-# =================================================
-# PHYSICS & ROTATION
-func _apply_rotation(delta: float) -> void:
-	var turn_scale = 1.0
-	if is_charging_jump: turn_scale = 0.5
-	elif is_drifting: turn_scale *= drift_turn_multiplier
-	elif !is_on_floor(): turn_scale = air_rotation_multiplier
-	rotate_object_local(Vector3.UP, smoothed_input_x * rotation_speed * turn_scale * delta)
-
-func _apply_slope_momentum(delta: float) -> void:
-	if !is_on_floor(): return
-	var n = get_floor_normal()
-	var slope = 1.0 - n.dot(Vector3.UP)
-	if slope < 0.02: return
-	current_speed += Vector3.DOWN.slide(n).normalized().dot(-global_transform.basis.z) * slope_accel_strength * slope * delta
-
-func _apply_surface_gravity(delta: float) -> void:
-	var g = ProjectSettings.get_setting("physics/3d/default_gravity") * gravity_mul
-	if is_wall_running: g *= wall_gravity_mul
-	var sn = wall_normal if is_wall_running else (last_surface_normal if is_on_floor() else Vector3.UP)
-	velocity += -sn * g * delta
-
-func _apply_floor_stick(delta: float) -> void:
-	var sn = wall_normal if is_wall_running else last_surface_normal
-	velocity += -sn * (wall_stick_force if is_wall_running else stick_force) * delta
-
-# =================================================
-# ALIGNMENTS
+# ALIGNMENTS & WALL RUN
 func _align_to_surface(delta: float, target_normal: Vector3, align_speed: float) -> void:
 	var current_basis = global_transform.basis
 	var current_up = current_basis.y
@@ -377,8 +397,11 @@ func _detect_wall_running() -> void:
 func _maintain_wall_speed() -> void:
 	if is_wall_running: velocity = velocity.slide(wall_normal).normalized() * current_speed
 
+func _on_wall_run_exit() -> void:
+	last_surface_normal = Vector3.UP; up_direction = Vector3.UP
+
 # =================================================
-# VISUALS & HELPERS
+# VISUALS & EFFECTS
 func _update_board_visual(delta: float) -> void:
 	if !board_target: return
 	var target_tilt = -smoothed_input_x * (max_lean_angle * (drift_lean_multiplier if is_drifting else 1.0))
@@ -390,9 +413,26 @@ func _update_air_pitch(delta: float) -> void:
 	var target = inp_pitch * deg_to_rad(air_pitch_max_angle) if !is_on_floor() else 0.0
 	current_air_pitch = lerp(current_air_pitch, target, (air_pitch_responsiveness if !is_on_floor() else air_pitch_return_speed) * delta)
 
-func _on_wall_run_exit() -> void:
-	last_surface_normal = Vector3.UP; up_direction = Vector3.UP
+func _update_camera_effects(delta: float) -> void:
+	if Cam and Cam is Camera3D:
+		var dashing = dash_timer > 0.0 or is_boosting
+		var target_fov = base_fov + (dash_fov_boost if dashing else 0.0)
+		var current_fov_speed = fov_lerp_speed if dashing else fov_return_speed
+		Cam.fov = lerp(Cam.fov, target_fov, current_fov_speed * delta)
+		
+		if dashing:
+			current_shake = dash_shake_intensity
+		
+		if current_shake > 0:
+			Cam.h_offset = randf_range(-current_shake, current_shake)
+			Cam.v_offset = randf_range(-current_shake, current_shake)
+			current_shake = move_toward(current_shake, 0.0, delta * 1.5)
+		else:
+			Cam.h_offset = 0
+			Cam.v_offset = 0
 
+# =================================================
+# UTILITIES
 func _teleport_to_last_ground() -> void:
 	global_position = last_ground_position; velocity = Vector3.ZERO; current_speed = 0.0
 
@@ -403,6 +443,15 @@ func _apply_ramp_boost_on_leave() -> void:
 
 func ChangeVelocity(vec: Vector3, force: float) -> void:
 	velocity += vec * force
+
+func _update_debug_ui() -> void:
+	if debug_enabled and has_node("DebugCanvas/DebugLabel"):
+		var label = get_node("DebugCanvas/DebugLabel")
+		var full_segments = floor(current_boost_segments)
+		var percentage = (current_boost_segments - full_segments) * 100
+		label.text = "[b]SPEED:[/b] %.1f\n" % current_speed
+		label.text += "[b]BOOST SEGMENTS:[/b] %d / %d (%.0f%%)\n" % [full_segments, max_boost_segments, percentage]
+		label.text += "[b]BOOSTING:[/b] %s\n" % str(is_boosting)
 
 func _dbg_log(msg: String) -> void:
 	if debug_enabled and debug_console_log: print("[BoardController] ", msg)
