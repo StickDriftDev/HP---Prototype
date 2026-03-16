@@ -16,6 +16,7 @@
 [ext_resource type="Script" uid="uid://bo840wx8beqi3" path="res://start_ik.gd" id="5_34dk1"]
 [ext_resource type="Script" uid="uid://daih5engufvr8" path="res://HYPERPOP/Codes/Movement/wall_running.gd" id="6_hwsgt"]
 [ext_resource type="Texture2D" uid="uid://bdmfkut4twad4" path="res://HYPERPOP/Assets/Characters/Ryder/RyderBody.png" id="7_yajaa"]
+[ext_resource type="Script" uid="uid://cwgdi870t4x25" path="res://HYPERPOP/Codes/Movement/boost.gd" id="8_mlmxm"]
 [ext_resource type="Texture2D" uid="uid://c1k2dyy2iqsi6" path="res://HYPERPOP/Assets/Characters/Ryder/HairHighlight.png" id="9_ea84n"]
 [ext_resource type="Texture2D" uid="uid://cmkqyv20jputr" path="res://HYPERPOP/Assets/Characters/Ryder/RyderFace.png" id="10_kqmo1"]
 [ext_resource type="Texture2D" uid="uid://dv3wl4v30jfi" path="res://HYPERPOP/Assets/Characters/Ryder/m_msk002_m_alb.png" id="11_skyvc"]
@@ -9390,6 +9391,10 @@ script = ExtResource("2_vjvt4")
 
 [node name="Wall_Running" type="Node" parent="BoardStateMachine" unique_id=525395192]
 script = ExtResource("6_hwsgt")
+
+[node name="Boost" type="Node" parent="BoardStateMachine" unique_id=821243280]
+script = ExtResource("8_mlmxm")
+metadata/_custom_type_script = "uid://covyts21cgpi6"
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=1370903136]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.35943604, 0.07601929)
