@@ -1,6 +1,7 @@
 extends CharacterBody3D
 class_name BoardController
 
+signal boost_modificado(segmentos_atuais: float, segmentos_maximos: int)
 # =================================================
 # LOCOMOTION STATE
 @export var loco_state_machine: Node 
@@ -8,13 +9,13 @@ class_name BoardController
 # =================================================
 # CONFIG — MOTION
 @export_category("Motion")
-@export var max_speed: float = 150.0
-@export var absolute_speed_cap: float = 200.0
-@export var acceleration: float = 5.0
+@export var max_speed: float = 200.0
+@export var absolute_speed_cap: float = 300.0
+@export var acceleration: float = 10.0
 @export var braking: float = 50.0
 @export var friction: float = 15.0
 @export var air_drag: float = 35.0
-@export var rotation_speed: float = 1.5
+@export var rotation_speed: float = 1.0
 @export var rotation_smoothing: float = 12.0
 
 # =================================================
@@ -28,7 +29,7 @@ class_name BoardController
 # =================================================
 # CONFIG — PHYSICS
 @export_category("Physics")
-@export var gravity_mul: float = 5.0
+@export var gravity_mul: float = 4.0
 @export var stick_force: float = 120.0
 @export var slope_alignment_speed: float = 15.0 
 @export var snap_length: float = 0.8
@@ -45,7 +46,7 @@ class_name BoardController
 # CONFIG — WALL RUNNING
 @export_category("Wall Running")
 @export var enable_wall_running: bool = true
-@export var wall_run_min_speed: float = 25.0
+@export var wall_run_min_speed: float = 40.0
 @export var wall_stick_force: float = 180.0
 @export var wall_gravity_mul: float = 0.35
 
@@ -85,7 +86,7 @@ class_name BoardController
 # CONFIG — DRIFT
 @export_category("Drift")
 @export var drift_min_speed: float = 15.0
-@export var drift_turn_multiplier: float = 2.5
+@export var drift_turn_multiplier: float = 2.3
 @export var drift_max_charge_time: float = 1.2
 @export var drift_dash_force: float = 60.0
 @export var drift_dash_duration: float = 0.2
@@ -94,10 +95,10 @@ class_name BoardController
 # =================================================
 # CONFIG — BOOST 
 @export_category("Boost System")
-@export var max_boost_segments: int = 3
-@export var boost_speed_target: float = 220.0
-@export var boost_duration_per_segment: float = 1.2
-@export var boost_accel_multiplier: float = 4.0
+@export var max_boost_segments: int = 4
+@export var boost_speed_target: float = 340.0
+@export var boost_duration_per_segment: float = 1.8
+@export var boost_accel_multiplier: float = 6.0
 @export var passive_boost_regen: float = 0.05 # Natural slow regen
 @export var drift_boost_regen: float = 0.6 # Gain fast boost when drifting
 
@@ -142,7 +143,11 @@ var can_jump: bool = false
 var current_shake: float = 0.0
 
 # BOOST STATE (Exposed for the UI to read easily)
-var current_boost_segments: float = 3.0 
+var current_boost_segments: float = 3.0:
+	set(value):
+		current_boost_segments = clamp(value, 0.0, float(max_boost_segments))
+		boost_modificado.emit(current_boost_segments, max_boost_segments)
+		
 var is_boosting: bool = false
 var boost_timer: float = 0.0
 
@@ -164,7 +169,7 @@ func _ready() -> void:
 	if loco_state_machine == null: 
 		push_error("Loco State Machine is null, add BoardStateMachine to this player")
 	
-	floor_max_angle = deg_to_rad(130)
+	floor_max_angle = deg_to_rad(60)
 	floor_snap_length = snap_length
 	floor_stop_on_slope = false
 	floor_block_on_wall = false
@@ -270,8 +275,8 @@ func _read_input(delta: float) -> void:
 	inp_brake              = Input.get_action_strength("brake")
 	inp_steer              = Input.get_action_strength("left") - Input.get_action_strength("right")
 	inp_drift              = Input.is_action_pressed("drift")
-	inp_jump_held          = Input.is_action_pressed("Jump")
-	inp_boost              = Input.is_action_just_pressed("Boost") 
+	inp_jump_held          = Input.is_action_pressed("jump")
+	inp_boost              = Input.is_action_just_pressed("boost") 
 	inp_pitch              = inp_throttle - inp_brake
 	
 	smoothed_input_x = lerp(smoothed_input_x, inp_steer, rotation_smoothing * delta)

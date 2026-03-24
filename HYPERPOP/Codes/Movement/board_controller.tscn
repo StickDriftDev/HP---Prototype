@@ -30,6 +30,7 @@
 [ext_resource type="AudioStream" uid="uid://dminv5tvcbikb" path="res://HYPERPOP/Assets/Sounds/Gameplay Sounds/TestSounds/01_12.wav" id="21_hhrmh"]
 [ext_resource type="AudioStream" uid="uid://ds52lg0tnhay2" path="res://HYPERPOP/Assets/Sounds/Gameplay Sounds/TestSounds/engine.wav" id="22_hwsgt"]
 [ext_resource type="AudioStream" uid="uid://djg1wuheud6tn" path="res://HYPERPOP/Assets/Sounds/Gameplay Sounds/TestSounds/SRN_player_se-005-Synth-player_se-player_002_break_wav.wav" id="23_sek2j"]
+[ext_resource type="AudioStream" uid="uid://shgh1r04o27m" path="res://HYPERPOP/Assets/Sounds/Gameplay Sounds/TestSounds/SRN_player_se-008-Synth-player_se-player_005_kickdash_wav.wav" id="27_4ybf0"]
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_nlt7y"]
 size = Vector3(1, 1.1162262, 4.4903717)
@@ -9632,13 +9633,14 @@ process_physics_priority = 300
 script = ExtResource("16_skyvc")
 metadata/_custom_type_script = "uid://bd046eokvcnu2"
 
-[node name="Sound" type="Node3D" parent="." unique_id=1375945813 node_paths=PackedStringArray("sfx_jump_launch", "sfx_jump_charge_loop", "sfx_land", "sfx_drift_loop", "sfx_dash", "sfx_engine_loop", "sfx_brake")]
+[node name="Sound" type="Node3D" parent="." unique_id=1375945813 node_paths=PackedStringArray("sfx_jump_launch", "sfx_jump_charge_loop", "sfx_land", "sfx_drift_loop", "sfx_dash", "sfx_boost", "sfx_engine_loop", "sfx_brake")]
 script = ExtResource("3_yajaa")
 sfx_jump_launch = NodePath("Sound_Jump")
 sfx_jump_charge_loop = NodePath("Sound_ChargeJump")
 sfx_land = NodePath("Sound_Land")
 sfx_drift_loop = NodePath("Sound_Drift")
 sfx_dash = NodePath("Sound_Dash")
+sfx_boost = NodePath("Sound_Boost")
 sfx_engine_loop = NodePath("Sound_Engine")
 sfx_brake = NodePath("Sound_Brake")
 
@@ -9650,6 +9652,9 @@ stream = ExtResource("18_vjvt4")
 
 [node name="Sound_Dash" type="AudioStreamPlayer3D" parent="Sound" unique_id=1108839341]
 stream = ExtResource("19_tj2nd")
+
+[node name="Sound_Boost" type="AudioStreamPlayer3D" parent="Sound" unique_id=814546273]
+stream = ExtResource("27_4ybf0")
 
 [node name="Sound_ChargeJump" type="AudioStreamPlayer3D" parent="Sound" unique_id=875949662]
 stream = ExtResource("20_70pc1")
