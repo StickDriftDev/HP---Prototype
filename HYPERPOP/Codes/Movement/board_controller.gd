@@ -1,6 +1,7 @@
 extends CharacterBody3D
 class_name BoardController
 
+signal boost_modificado(segmentos_atuais: float, segmentos_maximos: int)
 # =================================================
 # LOCOMOTION STATE
 @export var loco_state_machine: Node 
@@ -142,7 +143,11 @@ var can_jump: bool = false
 var current_shake: float = 0.0
 
 # BOOST STATE (Exposed for the UI to read easily)
-var current_boost_segments: float = 3.0 
+var current_boost_segments: float = 3.0:
+	set(value):
+		current_boost_segments = clamp(value, 0.0, float(max_boost_segments))
+		boost_modificado.emit(current_boost_segments, max_boost_segments)
+		
 var is_boosting: bool = false
 var boost_timer: float = 0.0
 
@@ -270,7 +275,7 @@ func _read_input(delta: float) -> void:
 	inp_brake              = Input.get_action_strength("brake")
 	inp_steer              = Input.get_action_strength("left") - Input.get_action_strength("right")
 	inp_drift              = Input.is_action_pressed("drift")
-	inp_jump_held          = Input.is_action_pressed("Jump")
+	inp_jump_held          = Input.is_action_pressed("jump")
 	inp_boost              = Input.is_action_just_pressed("boost") 
 	inp_pitch              = inp_throttle - inp_brake
 	
