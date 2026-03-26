@@ -29,13 +29,19 @@ texture_filter = 0
 [sub_resource type="ConcavePolygonShape3D" id="ConcavePolygonShape3D_4w0cu"]
 data = PackedVector3Array(-200, 0.5, 200, 200, 0.5, 200, -200, -0.5, 200, 200, 0.5, 200, 200, -0.5, 200, -200, -0.5, 200, 200, 0.5, -200, -200, 0.5, -200, 200, -0.5, -200, -200, 0.5, -200, -200, -0.5, -200, 200, -0.5, -200, 200, 0.5, 200, 200, 0.5, -200, 200, -0.5, 200, 200, 0.5, -200, 200, -0.5, -200, 200, -0.5, 200, -200, 0.5, -200, -200, 0.5, 200, -200, -0.5, -200, -200, 0.5, 200, -200, -0.5, 200, -200, -0.5, -200, 200, 0.5, 200, -200, 0.5, 200, 200, 0.5, -200, -200, 0.5, 200, -200, 0.5, -200, 200, 0.5, -200, -200, -0.5, 200, 200, -0.5, 200, -200, -0.5, -200, 200, -0.5, 200, 200, -0.5, -200, -200, -0.5, -200)
 
+[sub_resource type="BoxMesh" id="BoxMesh_jvh82"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_sdtpv"]
+
+[sub_resource type="CylinderShape3D" id="CylinderShape3D_jvh82"]
+
 [node name="KcTest" type="Node3D" unique_id=2094729614]
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=1129483894]
 environment = SubResource("Environment_jvh82")
 
 [node name="Floor" type="MeshInstance3D" parent="." unique_id=383837066]
-transform = Transform3D(10, 0, 0, 0, 10, 0, 0, 0, 10, 0, 0, 0)
+transform = Transform3D(10, 0, 0, 0, 10, 0, 0, 0, 10, 0, -10, 0)
 mesh = SubResource("BoxMesh_sdtpv")
 surface_material_override/0 = SubResource("StandardMaterial3D_jvh82")
 
@@ -47,12 +53,11 @@ collision_mask = 7
 shape = SubResource("ConcavePolygonShape3D_4w0cu")
 
 [node name="BoardController" parent="." unique_id=723564920 instance=ExtResource("2_3wh3v")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 13.135, 10, 13.187)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1.3162498, 0)
 
 [node name="PlayerHud" type="Node" parent="." unique_id=302137040]
 
-[node name="BoostBar" parent="PlayerHud" unique_id=379290582 node_paths=PackedStringArray("player_controller") instance=ExtResource("3_sdtpv")]
-player_controller = NodePath("")
+[node name="BoostBar" parent="PlayerHud" unique_id=379290582 instance=ExtResource("3_sdtpv")]
 
 [node name="PauseMenu" parent="." unique_id=83343215 instance=ExtResource("4_jvh82")]
 size_flags_horizontal = 4
@@ -65,3 +70,22 @@ light_volumetric_fog_energy = 3.301
 light_specular = 2.644
 shadow_enabled = true
 shadow_blur = 0.0
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="." unique_id=1041444861]
+transform = Transform3D(0.78605586, 0, 0, 0, 0.7953616, 12.264491, 0, -41.803085, 0.23334889, -4.094063, 0.19804835, -9.603926)
+mesh = SubResource("BoxMesh_jvh82")
+
+[node name="StaticBody3D" type="StaticBody3D" parent="MeshInstance3D" unique_id=1319115333]
+transform = Transform3D(1, 0, 0, 0, 0.99999994, 0, 0, 0, 1, 0, 0, 0)
+collision_layer = 32
+collision_mask = 7
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="MeshInstance3D/StaticBody3D" unique_id=1225823426]
+transform = Transform3D(1, 0, 0, 0, 0.99999994, 0, 0, 0, 1, 0, 0, 0)
+shape = SubResource("BoxShape3D_sdtpv")
+
+[node name="Area3D" type="Area3D" parent="MeshInstance3D" unique_id=622953869]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="MeshInstance3D/Area3D" unique_id=909217956]
+transform = Transform3D(1, 0, 0, 0, 0.99999994, 0, 0, 0, 1, 0, 0, 0)
+shape = SubResource("CylinderShape3D_jvh82")
