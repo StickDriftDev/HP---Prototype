@@ -1,0 +1,67 @@
+[gd_scene format=3 uid="uid://c4iu8xdaroybe"]
+
+[ext_resource type="Texture2D" uid="uid://j6ja1dn1oo5i" path="res://HYPERPOP/Scenes/TEST_LEVELS/Test1/WornCheckerboard_Greyscale.png" id="1_f5m8a"]
+[ext_resource type="PackedScene" uid="uid://bt74p0pm4ea0b" path="res://HYPERPOP/Codes/Movement/board_controller.tscn" id="2_3wh3v"]
+[ext_resource type="PackedScene" uid="uid://dm4ne4sl47gnl" path="res://HYPERPOP/Codes/HUD/boost_bar.tscn" id="3_sdtpv"]
+[ext_resource type="PackedScene" uid="uid://dpg24kp8whij4" path="res://HYPERPOP/Codes/Pause Ui/pause_menu.tscn" id="4_jvh82"]
+
+[sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_sdtpv"]
+
+[sub_resource type="Sky" id="Sky_2au82"]
+sky_material = SubResource("ProceduralSkyMaterial_sdtpv")
+
+[sub_resource type="Environment" id="Environment_jvh82"]
+background_mode = 2
+sky = SubResource("Sky_2au82")
+
+[sub_resource type="BoxMesh" id="BoxMesh_sdtpv"]
+uv2_padding = 5.25
+size = Vector3(400, 1, 400)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_jvh82"]
+albedo_color = Color(0.3144219, 0.4533559, 0.1781036, 1)
+albedo_texture = ExtResource("1_f5m8a")
+uv1_scale = Vector3(0.135, 0.135, 0.135)
+uv1_triplanar = true
+uv2_world_triplanar = true
+texture_filter = 0
+
+[sub_resource type="ConcavePolygonShape3D" id="ConcavePolygonShape3D_4w0cu"]
+data = PackedVector3Array(-200, 0.5, 200, 200, 0.5, 200, -200, -0.5, 200, 200, 0.5, 200, 200, -0.5, 200, -200, -0.5, 200, 200, 0.5, -200, -200, 0.5, -200, 200, -0.5, -200, -200, 0.5, -200, -200, -0.5, -200, 200, -0.5, -200, 200, 0.5, 200, 200, 0.5, -200, 200, -0.5, 200, 200, 0.5, -200, 200, -0.5, -200, 200, -0.5, 200, -200, 0.5, -200, -200, 0.5, 200, -200, -0.5, -200, -200, 0.5, 200, -200, -0.5, 200, -200, -0.5, -200, 200, 0.5, 200, -200, 0.5, 200, 200, 0.5, -200, -200, 0.5, 200, -200, 0.5, -200, 200, 0.5, -200, -200, -0.5, 200, 200, -0.5, 200, -200, -0.5, -200, 200, -0.5, 200, 200, -0.5, -200, -200, -0.5, -200)
+
+[node name="KcTest" type="Node3D" unique_id=2094729614]
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=1129483894]
+environment = SubResource("Environment_jvh82")
+
+[node name="Floor" type="MeshInstance3D" parent="." unique_id=383837066]
+transform = Transform3D(10, 0, 0, 0, 10, 0, 0, 0, 10, 0, 0, 0)
+mesh = SubResource("BoxMesh_sdtpv")
+surface_material_override/0 = SubResource("StandardMaterial3D_jvh82")
+
+[node name="StaticBody3D" type="StaticBody3D" parent="Floor" unique_id=1882074661]
+collision_layer = 32
+collision_mask = 7
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Floor/StaticBody3D" unique_id=1561190252]
+shape = SubResource("ConcavePolygonShape3D_4w0cu")
+
+[node name="BoardController" parent="." unique_id=723564920 instance=ExtResource("2_3wh3v")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 13.135, 10, 13.187)
+
+[node name="PlayerHud" type="Node" parent="." unique_id=302137040]
+
+[node name="BoostBar" parent="PlayerHud" unique_id=379290582 node_paths=PackedStringArray("player_controller") instance=ExtResource("3_sdtpv")]
+player_controller = NodePath("")
+
+[node name="PauseMenu" parent="." unique_id=83343215 instance=ExtResource("4_jvh82")]
+size_flags_horizontal = 4
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="." unique_id=243904396]
+transform = Transform3D(-0.4560731, -0.62108225, 0.6373807, 0, 0.7162045, 0.69789046, -0.8899423, 0.31828907, -0.32664162, 0, 0, 0)
+light_energy = 1.11
+light_indirect_energy = 3.301
+light_volumetric_fog_energy = 3.301
+light_specular = 2.644
+shadow_enabled = true
+shadow_blur = 0.0

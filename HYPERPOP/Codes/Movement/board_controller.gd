@@ -194,7 +194,7 @@ func _physics_process(delta: float) -> void:
 	if is_wall_running:
 		_apply_wall_run_projection(delta)
 	_handle_surface_states(delta)
-	      
+		  
 	if not is_charging_jump and (is_on_floor() or is_wall_running):
 		
 		apply_floor_snap()
