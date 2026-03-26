@@ -2,7 +2,7 @@ class_name PlaySoundsFX
 extends Node
 
 # =================================================
-# REFERENCES
+# REFERÊNCIAS
 @onready var board_controller: BoardController = $".."
 
 # =================================================
@@ -13,11 +13,12 @@ extends Node
 @export var sfx_land: AudioStreamPlayer3D
 @export var sfx_drift_loop: AudioStreamPlayer3D
 @export var sfx_dash: AudioStreamPlayer3D
+@export var sfx_boost: AudioStreamPlayer3D
 @export var sfx_engine_loop: AudioStreamPlayer3D
 @export var sfx_brake: AudioStreamPlayer3D
 
 # =================================================
-# STATE
+# ESTADO
 var current_jump_charge: float = 0.0
 var max_charge_time: float = 0.8
 
@@ -39,28 +40,30 @@ func play_land() -> void:
 	_play_once(sfx_land)
 
 # =================================================
-# ENGINE
+# ENGINE & MOVEMENT
 func _update_engine_audio(current_speed: float, max_speed: float) -> void:
 	if !sfx_engine_loop: return
+	
 	if current_speed > 1.0:
 		_play(sfx_engine_loop)
-		sfx_engine_loop.pitch_scale = lerp(0.9, 1.6, current_speed / max_speed)
+		sfx_engine_loop.pitch_scale = lerp(0.9, 1.6, clamp(current_speed / max_speed, 0.0, 2.0))
 	else:
 		_stop(sfx_engine_loop)
 
+func play_dash() -> void:
+	_play_once(sfx_dash)
+
+func play_boost() -> void:
+	_play_once(sfx_boost)
+
 # =================================================
-# DRIFT
+# DRIFT & BRAKING
 func play_drift_loop() -> void:
 	_play(sfx_drift_loop)
 
 func stop_drift_loop() -> void:
 	_stop(sfx_drift_loop)
 
-func play_dash() -> void:
-	_play_once(sfx_dash)
-
-# =================================================
-# BRAKING
 func play_brake() -> void:
 	_play(sfx_brake)
 
@@ -68,7 +71,7 @@ func stop_brake() -> void:
 	_stop(sfx_brake)
 
 # =================================================
-# HELPERS
+# HELPERS (AUXILIARES)
 func _play(player: AudioStreamPlayer3D) -> void:
 	if player && !player.playing:
 		player.play()

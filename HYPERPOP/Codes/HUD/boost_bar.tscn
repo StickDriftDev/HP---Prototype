@@ -1,0 +1,59 @@
+[gd_scene format=3 uid="uid://dm4ne4sl47gnl"]
+
+[ext_resource type="Script" uid="uid://ds1ypd5ellb6p" path="res://HYPERPOP/Codes/HUD/boost_bar.tscn.gd" id="1_x777y"]
+[ext_resource type="Texture2D" uid="uid://bvvrr8mu3x3c3" path="res://HYPERPOP/Assets/Common/UI/Placeholders/BOOSTOUTLINE.png" id="2_siqc8"]
+[ext_resource type="Texture2D" uid="uid://buoe70lg7mgvp" path="res://HYPERPOP/Assets/Common/UI/Placeholders/BOOSTFILL.png" id="3_ljijh"]
+[ext_resource type="AudioStream" uid="uid://c2ru60r3njpnx" path="res://HYPERPOP/Assets/Common/UI/Placeholders/0323.WAV" id="4_g2u3u"]
+[ext_resource type="Texture2D" uid="uid://b4vxxqsppxhq" path="res://HYPERPOP/Assets/Common/UI/Placeholders/VELOCIMETEROUTLINE.png" id="5_xp628"]
+[ext_resource type="Texture2D" uid="uid://b38lsgg2m1vw4" path="res://HYPERPOP/Assets/Common/UI/Placeholders/VELOCIMETERFULL.png" id="6_y680e"]
+
+[node name="BoostBar" type="Control" unique_id=379290582 node_paths=PackedStringArray("alarm_player", "progress_bar")]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_x777y")
+alarm_player = NodePath("BoostHud/WarningSound")
+progress_bar = NodePath("BoostHud")
+
+[node name="BoostHud" type="TextureProgressBar" parent="." unique_id=386991790]
+layout_mode = 1
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -311.0
+offset_top = -312.0
+offset_right = 210.0
+offset_bottom = -76.0
+grow_horizontal = 0
+grow_vertical = 0
+scale = Vector2(0.495, 0.495)
+step = 0.01
+value = 100.0
+texture_under = ExtResource("2_siqc8")
+texture_progress = ExtResource("3_ljijh")
+
+[node name="WarningSound" type="AudioStreamPlayer2D" parent="BoostHud" unique_id=1964868696]
+stream = ExtResource("4_g2u3u")
+
+[node name="TextureProgressBar" type="TextureProgressBar" parent="." unique_id=1713055537]
+layout_mode = 1
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -318.0
+offset_top = -272.0
+offset_right = 140.0
+offset_bottom = 170.0
+grow_horizontal = 0
+grow_vertical = 0
+scale = Vector2(0.495, 0.495)
+value = 100.0
+texture_under = ExtResource("5_xp628")
+texture_progress = ExtResource("6_y680e")
