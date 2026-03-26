@@ -3,77 +3,90 @@ class_name WallRunning
 
 @onready var player: BoardController = get_parent().get_parent()
 
+const WALL_RUN_LAYER: int = 5
 
 func enter_state() -> void:
 	print_debug("Enter Wall_Running")
+	player.is_wall_running = true
+	
+	player.velocity.y *= 0.1
 
 func exit_state() -> void:
 	print_debug("Exit Wall_Running")
+	player.is_wall_running = false
+	player.wall_normal = Vector3.ZERO
+	player.wall_side = 0.0
 
 func physics_process(delta: float) -> void:
-	# 1. Update State & Inputs
 	player._read_input(delta)
-	_update_loco_state()
 	
-	_update_speed(delta)
+	_maintain_wall_speed(delta)
 	
-	# Wall Run Detection
-	_detect_wall_running()
-	
-	# 5. Post-move logic
-	_maintain_wall_speed()
-	_apply_ramp_boost_on_leave()
+	_apply_wall_gravity(delta)
 	player.move_and_slide()
-
+	
+	_check_wall_connection()
+	_update_loco_state()
 
 # =================================================
 # LOCOMOTION STATE RESOLVER
 func _update_loco_state() -> void:
+	
 	if player.is_wall_running:
-		return
-	elif player.is_on_floor():
 		if player.can_jump and player.inp_jump_held:
 			loco_state_machine.change_state("Jump_Charging")
-		elif player.drift_input and player.current_speed >= player.drift_min_speed:
-			loco_state_machine.change_state("Drifting")
-		else:
-			loco_state_machine.change_state("Grounded")
+		return  
+	if player.is_on_floor():
+		loco_state_machine.change_state("Grounded")
 	else:
 		loco_state_machine.change_state("Airborne")
-
-
-# =================================================
-# SPEED
-func _update_speed(delta: float) -> void:
-	pass
+			
 
 # =================================================
-# WALL RUNNING
-func _detect_wall_running() -> void:
-	if player.is_on_floor():
-		player.is_wall_running = false
+# WALL RUNNING MATH
+func _maintain_wall_speed(delta: float) -> void:
+	if player.wall_normal == Vector3.ZERO:
 		return
+
+	var fwd: Vector3 = -player.global_transform.basis.z
+	var wall_forward: Vector3 = player.wall_normal.cross(Vector3.UP).normalized()
+	
+	if fwd.dot(wall_forward) < 0:
+		wall_forward = -wall_forward
+	
+	var current_fall = player.velocity.y
+	player.velocity = wall_forward * player.current_speed
+	player.velocity.y = current_fall
+	
+	var stick = player.wall_stick_force if "wall_stick_force" in player else player.stick_force
+	player.velocity -= player.wall_normal * stick * delta
+
+func _apply_wall_gravity(delta: float) -> void:
+	var g = ProjectSettings.get_setting("physics/3d/default_gravity")
+	var grav_mul = player.wall_gravity_mul if "wall_gravity_mul" in player else 0.2
+	player.velocity.y -= (g * grav_mul) * delta
+
+func _check_wall_connection() -> void:
 	var found_wall: bool = false
+	var best_normal: Vector3 = Vector3.ZERO
+	
 	for i in player.get_slide_collision_count():
-		var n: Vector3 = player.get_slide_collision(i).get_normal()
+		var collision = player.get_slide_collision(i)
+		var n: Vector3 = collision.get_normal()
+		
+		if n.dot(Vector3.UP) > 0.7: 
+			player.is_wall_running = false
+			return
+
 		if abs(n.dot(Vector3.UP)) < 0.3:
-			player.wall_normal = n
-			found_wall = true
-			if not player.was_wall_running:
-				player._dbg_log("EVENT: Wall run START — speed: %.1f, normal: %s" % [player.current_speed, player.wall_normal])
-			player.is_wall_running = true
-			break
-	if !found_wall:
+			var collider = collision.get_collider()
+			if collider and collider.get_collision_layer_value(WALL_RUN_LAYER):
+				best_normal = n
+				found_wall = true
+				break
+	
+	if found_wall:
+		player.wall_normal = best_normal
+		player.is_wall_running = true # Mantém o flag ativo
+	else:
 		player.is_wall_running = false
-
-func _maintain_wall_speed() -> void:
-	if !player.is_wall_running: return
-	player.velocity = player.velocity.slide(player.wall_normal).normalized() * player.current_speed
-	player.velocity -= player.wall_normal * player.stick_force * player.get_physics_process_delta_time()
-
-func _apply_ramp_boost_on_leave() -> void:
-	if player.was_on_floor && !player.is_on_floor():
-		var angle_factor: float = 1.0 - player.get_floor_normal().dot(Vector3.UP)
-		if angle_factor > 0.15:
-			player.velocity += player.velocity.normalized() * player.slope_launch_boost * angle_factor
-			player._dbg_log("EVENT: Ramp boost — angle_factor: %.2f" % angle_factor)

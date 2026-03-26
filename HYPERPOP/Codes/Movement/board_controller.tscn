@@ -30,6 +30,7 @@
 [ext_resource type="AudioStream" uid="uid://dminv5tvcbikb" path="res://HYPERPOP/Assets/Sounds/Gameplay Sounds/TestSounds/01_12.wav" id="21_hhrmh"]
 [ext_resource type="AudioStream" uid="uid://ds52lg0tnhay2" path="res://HYPERPOP/Assets/Sounds/Gameplay Sounds/TestSounds/engine.wav" id="22_hwsgt"]
 [ext_resource type="AudioStream" uid="uid://djg1wuheud6tn" path="res://HYPERPOP/Assets/Sounds/Gameplay Sounds/TestSounds/SRN_player_se-005-Synth-player_se-player_002_break_wav.wav" id="23_sek2j"]
+[ext_resource type="AudioStream" uid="uid://shgh1r04o27m" path="res://HYPERPOP/Assets/Sounds/Gameplay Sounds/TestSounds/SRN_player_se-008-Synth-player_se-player_005_kickdash_wav.wav" id="27_4ybf0"]
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_nlt7y"]
 size = Vector3(1, 1.1162262, 4.4903717)
@@ -9395,10 +9396,13 @@ transparency = 1
 albedo_color = Color(0.3019608, 0.5411765, 0.9254902, 0.25882354)
 
 [node name="BoardController" type="CharacterBody3D" unique_id=723564920 node_paths=PackedStringArray("loco_state_machine", "board_target", "Rider_Model", "Cam", "PlayerSFX")]
+collision_mask = 63
 floor_block_on_wall = false
 floor_max_angle = 1.5707964
 script = ExtResource("1_mkhe7")
 loco_state_machine = NodePath("BoardStateMachine")
+ignore_align_mask = 63
+wall_run_layer = 16
 board_target = NodePath("RyderGear")
 Rider_Model = NodePath("RyderGear/RyderModel")
 Cam = NodePath("Camera3D")
@@ -9650,6 +9654,9 @@ stream = ExtResource("18_vjvt4")
 
 [node name="Sound_Dash" type="AudioStreamPlayer3D" parent="Sound" unique_id=1108839341]
 stream = ExtResource("19_tj2nd")
+
+[node name="Sound_Boost" type="AudioStreamPlayer3D" parent="Sound" unique_id=1908019487]
+stream = ExtResource("27_4ybf0")
 
 [node name="Sound_ChargeJump" type="AudioStreamPlayer3D" parent="Sound" unique_id=875949662]
 stream = ExtResource("20_70pc1")

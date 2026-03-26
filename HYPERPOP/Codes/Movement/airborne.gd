@@ -3,57 +3,60 @@ class_name Airborne
 
 @onready var player: BoardController = get_parent().get_parent()
 
+var air_time_bonus: float = 0.0
 
 func enter_state() -> void:
-	print_debug("Enter Airborne")
+	if player.Rider_Model:
+		player.target_visual_scale = Vector3(0.8, 1.3, 0.8)
+	air_time_bonus = 0.0
 
 func exit_state() -> void:
-	print_debug("Exit Airborne")
+	player.current_air_pitch = 0.0
 
 func physics_process(delta: float) -> void:
-	# 1. Update State & Inputs
 	player._read_input(delta)
 	_update_loco_state()
 	
-	_update_speed(delta)
+	_handle_air_physics(delta)
+	_update_air_visuals(delta)
 	
-	_update_air_pitch(delta)
 	player.move_and_slide()
 
+func _handle_air_physics(delta: float) -> void:
+	var dive_factor: float = sin(player.current_air_pitch)
+	
+	if dive_factor > 0.1: 
+		player.current_speed += player.dive_speed_gain * dive_factor * delta
+		player.current_shake = move_toward(player.current_shake, 0.15 * dive_factor, delta)
+	elif dive_factor < -0.1: 
+		player.current_speed -= player.pull_up_speed_loss * abs(dive_factor) * delta
+		player.velocity.y += abs(dive_factor) * 2.0 * delta 
+	
+	if player.inp_brake > 0:
+		player.current_speed = move_toward(player.current_speed, 0.0, player.air_brake_force * delta)
+	
+	var side_dir = player.global_transform.basis.x
+	player.velocity += side_dir * player.inp_steer * player.air_lateral_force * delta
 
-# =================================================
-# LOCOMOTION STATE RESOLVER
+	player.current_speed = max(player.current_speed, 5.0) 
+
+func _update_air_visuals(delta: float) -> void:
+	var target_roll = -player.inp_steer * 25.0 
+	player.Cam.rotation_degrees.z = lerp(player.Cam.rotation_degrees.z, target_roll, 5.0 * delta)
+	
+	if player.Cam:
+		var dive_fov_boost = clamp(sin(player.current_air_pitch) * 15.0, 0.0, 15.0)
+		player.Cam.fov = lerp(player.Cam.fov, player.base_fov + dive_fov_boost, 4.0 * delta)
+
 func _update_loco_state() -> void:
 	if player.is_wall_running:
 		loco_state_machine.change_state("Wall_Running")
-	elif player.is_on_floor():
-		if player.can_jump and player.inp_jump_held:
+		return
+
+	if player.is_on_floor():
+		if player.inp_jump_held:
 			loco_state_machine.change_state("Jump_Charging")
-		elif player.drift_input and player.current_speed >= player.drift_min_speed:
+		elif player.inp_drift:
 			loco_state_machine.change_state("Drifting")
 		else:
 			loco_state_machine.change_state("Grounded")
-	else:
-		return
-
-
-# =================================================
-# SPEED
-func _update_speed(delta: float) -> void:
-	if !player.is_on_floor() && !player.is_wall_running:
-		var dive_factor: float = sin(player.current_air_pitch)
-		if dive_factor > 0:
-			player.current_speed += player.dive_speed_gain * dive_factor * delta
-		else:
-			player.current_speed -= player.pull_up_speed_loss * abs(dive_factor) * delta
-		player.current_speed = max(player.current_speed, 0.0)
-
-
-# =================================================
-# AIR CONTROLS (PITCH)
-func _update_air_pitch(delta: float) -> void:
-	var target_pitch: float = 0.0
-	if !player.is_on_floor() && !player.is_wall_running:
-		target_pitch = player.inp_pitch * deg_to_rad(player.air_pitch_max_angle)
-	var lerp_speed: float = player.air_pitch_responsiveness if (!player.is_on_floor() && !player.is_wall_running) else player.air_pitch_return_speed
-	player.current_air_pitch = lerp(player.current_air_pitch, target_pitch, lerp_speed * delta)

@@ -3,53 +3,56 @@ class_name JumpCharging
 
 @onready var player: BoardController = get_parent().get_parent()
 
-
 func enter_state() -> void:
-	print_debug("Enter Jump_Charging")
+	player.is_charging_jump = true
+	player.current_jump_charge = 0.0
+	if player.PlayerSFX and player.PlayerSFX.has_method("play_charge_start"):
+		player.PlayerSFX.play_charge_start()
 
 func exit_state() -> void:
-	print_debug("Exit Jump_Charging")
+	player.is_charging_jump = false
 
 func physics_process(delta: float) -> void:
-	# 1. Update State & Inputs
 	player._read_input(delta)
+	
+	_handle_charging_logic(delta)
+	_apply_visual_tension(delta)
+	
+	player.current_speed = lerp(player.current_speed, 0.0, player.jump_charge_drag * delta)
+	
+	if not player.is_on_floor() and not player.is_wall_running:
+		_release_jump()
+		return
+
 	_update_loco_state()
-	
-	_update_jump_charge(delta)
-	
-	_update_speed(delta)
 	player.move_and_slide()
 
-
-# =================================================
-# LOCOMOTION STATE RESOLVER
-func _update_loco_state() -> void:
-	if player.is_wall_running:
-		loco_state_machine.change_state("Wall_Running")
-	elif player.is_on_floor():
-		if player.can_jump and player.inp_jump_held:
-			return
-		elif player.drift_input and player.current_speed >= player.drift_min_speed:
-			loco_state_machine.change_state("Drifting")
-		else:
-			loco_state_machine.change_state("Grounded")
-	else:
-		loco_state_machine.change_state("Airborne")
-
-
-# =================================================
-# SPEED
-func _update_speed(delta: float) -> void:
-	player.current_speed = lerp(player.current_speed, 0.0, player.jump_charge_drag * delta)
-
-
-# JUMP STATE
-func _update_jump_charge(delta: float) -> void:
-	if player.can_jump and player.inp_jump_held:
-		player.is_charging_jump = true
+func _handle_charging_logic(delta: float) -> void:
+	if player.inp_jump_held:
 		player.current_jump_charge = move_toward(player.current_jump_charge, 1.0, delta / player.max_charge_time)
-	if player.is_charging_jump and not player.inp_jump_held:
-		player._dbg_log("EVENT: Jump launched — charge: %.2f" % (player.PlayerSFX.current_jump_charge if player.PlayerSFX else 1.0))
-		player._execute_jump()
-		player.is_charging_jump = false
-		player.current_jump_charge = 0.0
+		
+		if player.current_jump_charge > 0.5:
+			player.Rider_Model.position.x = randf_range(-0.02, 0.02) * player.current_jump_charge
+	else:
+		_release_jump()
+
+func _apply_visual_tension(delta: float) -> void:
+
+	var squash = player.current_jump_charge * 0.4
+	player.target_visual_scale = Vector3(1.0 + squash, 1.0 - squash, 1.0 + squash)
+	
+	if player.Cam:
+		var target_fov = player.base_fov - (5.0 * player.current_jump_charge)
+		player.Cam.fov = lerp(player.Cam.fov, target_fov, 10.0 * delta)
+
+func _release_jump() -> void:
+	player._execute_jump()
+	
+	if player.Cam:
+		player.Cam.fov += 10.0 
+	
+	loco_state_machine.change_state("Airborne")
+
+func _update_loco_state() -> void:
+	if not player.inp_jump_held:
+		loco_state_machine.change_state("Grounded")
