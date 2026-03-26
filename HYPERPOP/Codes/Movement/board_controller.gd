@@ -22,7 +22,7 @@ signal landed(impact_strength: float)
 @export var rotation_smoothing: float = 12.0
 
 # =================================================
-# CONFIG — JUMP & PHYSICS JUICE
+# CONFIG — JUMP & PHYSICS 
 @export_category("Jump & Physics")
 @export var min_jump_force: float = 12.0
 @export var max_jump_force: float = 35.0
@@ -111,7 +111,7 @@ var boost_timer: float = 0.0
 @export var debug_enabled: bool = true
 
 # =================================================
-# STATE VARIABLES (Limpos)
+# STATE VARIABLES 
 var current_speed: float = 0.0
 var input_dir: Vector2 = Vector2.ZERO
 var smoothed_input_x: float = 0.0
