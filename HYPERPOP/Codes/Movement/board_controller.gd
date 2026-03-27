@@ -284,7 +284,7 @@ func apply_ramp_launch(launch_velocity: Vector3, custom_gravity: float, ramp_dir
 		PlayerSFX.play_jump_launch()
 		
 # =================================================
-# RESTANTE DA LÓGICA CORE (MANTIDA INTEGRALMENTE)
+# CORE LOGIC
 
 func _apply_wall_run_projection(delta: float) -> void:
 	if not is_wall_running: return

@@ -4,14 +4,14 @@ class_name TrickManager
 @onready var player: BoardController = get_parent()
 
 @export_group("Trick Settings")
-@export var spin_acceleration: float = 25.0    # Velocidade que ganha ao segurar o analógico
-@export var max_spin_speed: float = 20.0       # Limite de velocidade do giro
-@export var spin_friction: float = 4.0         # Atrito que desacelera quando solta o controle
-@export var safe_landing_threshold: float = 0.4 # 1.0 é reto. 0.4 dá uma janela justa para o jogador acertar
+@export var spin_acceleration: float = 25.0    
+@export var max_spin_speed: float = 20.0      
+@export var spin_friction: float = 4.0        
+@export var safe_landing_threshold: float = 0.4 
 
 @export var rank_thresholds: Dictionary = {
-	"C": 1.0,  # 1 volta
-	"B": 2.5,  # 2.5 voltas e assim por diante
+	"C": 1.0,  
+	"B": 2.5, 
 	"A": 4.0,
 	"S": 6.0,
 	"X": 9.0
@@ -31,7 +31,6 @@ func start_tricks(is_mega_launch: bool) -> void:
 func process_trick_input(delta: float) -> void:
 	if not is_active: return
 
-	# Eixo X (Left/Right) gira pros lados. Eixo Y (Brake/Throttle) inclina pra frente/trás.
 	var input_vec = Vector2(
 		Input.get_action_strength("right") - Input.get_action_strength("left"),
 		Input.get_action_strength("brake") - Input.get_action_strength("throttle") # Throttle costuma inclinar pra frente
@@ -45,7 +44,6 @@ func process_trick_input(delta: float) -> void:
 		# Desacelera quando solta, permitindo mirar para pousar
 		current_spin_vel = current_spin_vel.lerp(Vector2.ZERO, spin_friction * delta)
 
-	# Limita a insanidade da velocidade
 	current_spin_vel.x = clamp(current_spin_vel.x, -max_spin_speed * trick_speed_mult, max_spin_speed * trick_speed_mult)
 	current_spin_vel.y = clamp(current_spin_vel.y, -max_spin_speed * trick_speed_mult, max_spin_speed * trick_speed_mult)
 
@@ -56,17 +54,12 @@ func _update_visual_rotation(delta: float) -> void:
 	
 	var rot_speed = current_spin_vel.length()
 	
-	# Só gira se tiver velocidade suficiente
 	if rot_speed > 0.01:
-		# Cria um vetor 3D de direção baseada no Input (X para frente/trás, Y para os lados)
 		var spin_axis = Vector3(current_spin_vel.x, current_spin_vel.y, 0).normalized()
 		
-		# QUATERNIONS! O segredo de Sonic Riders. Isso permite girar infinitamente em qualquer 
-		# direção sem bugar o modelo (Gimbal Lock).
 		var spin_quat = Quaternion(spin_axis, rot_speed * delta)
 		player.board_target.quaternion = player.board_target.quaternion * spin_quat
 		
-		# Usa a constante TAU (que é 2 * PI, ou 360 graus) para contar quantas voltas reais foram dadas
 		total_spins_accumulated += (rot_speed * delta) / TAU
 
 func finish_tricks() -> String:
@@ -87,7 +80,6 @@ func finish_tricks() -> String:
 func _evaluate_landing() -> bool:
 	if not player.board_target: return true
 	
-	# Verifica se a cabeça do personagem (Y local) está apontando pra cima (Y global)
 	var model_up = player.board_target.global_transform.basis.y.normalized()
 	var reference_up = player.global_transform.basis.y.normalized() 
 	
@@ -104,8 +96,6 @@ func _penalize_momentum() -> void:
 func _reset_rider_rotation() -> void:
 	if not player.board_target: return
 	
-	# Cria uma transição (Tween) suave para o personagem não "teleportar" 
-	# bruscamente para a pose em pé. Ele se conserta em 0.25 segundos.
 	var tween = create_tween()
 	tween.tween_property(player.board_target, "quaternion", Quaternion.IDENTITY, 0.25).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
 
