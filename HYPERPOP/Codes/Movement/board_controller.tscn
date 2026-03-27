@@ -15,10 +15,12 @@
 [ext_resource type="Texture2D" uid="uid://dgyd8uepklb3g" path="res://HYPERPOP/Assets/Characters/Ryder/Outline.png" id="4_wmvvi"]
 [ext_resource type="Script" uid="uid://bo840wx8beqi3" path="res://start_ik.gd" id="5_34dk1"]
 [ext_resource type="Script" uid="uid://daih5engufvr8" path="res://HYPERPOP/Codes/Movement/wall_running.gd" id="6_hwsgt"]
+[ext_resource type="Script" uid="uid://cqgi43tw4lopk" path="res://HYPERPOP/Codes/Movement/trick_airborne.gd" id="7_436y7"]
 [ext_resource type="Texture2D" uid="uid://bdmfkut4twad4" path="res://HYPERPOP/Assets/Characters/Ryder/RyderBody.png" id="7_yajaa"]
 [ext_resource type="Script" uid="uid://cwgdi870t4x25" path="res://HYPERPOP/Codes/Movement/boost.gd" id="8_mlmxm"]
 [ext_resource type="Script" uid="uid://cgdij0t6vc5gl" path="res://HYPERPOP/Codes/Movement/rail_glide.gd" id="9_436y7"]
 [ext_resource type="Texture2D" uid="uid://c1k2dyy2iqsi6" path="res://HYPERPOP/Assets/Characters/Ryder/HairHighlight.png" id="9_ea84n"]
+[ext_resource type="Script" uid="uid://dbosgxr7kvyk5" path="res://HYPERPOP/Codes/Movement/TrickManager.gd" id="10_fwmga"]
 [ext_resource type="Texture2D" uid="uid://cmkqyv20jputr" path="res://HYPERPOP/Assets/Characters/Ryder/RyderFace.png" id="10_kqmo1"]
 [ext_resource type="Texture2D" uid="uid://dv3wl4v30jfi" path="res://HYPERPOP/Assets/Characters/Ryder/m_msk002_m_alb.png" id="11_skyvc"]
 [ext_resource type="Texture2D" uid="uid://bq44tchloil2r" path="res://HYPERPOP/Assets/Characters/Ryder/m_sht014_alb.png" id="12_3uprp"]
@@ -9397,12 +9399,11 @@ transparency = 1
 albedo_color = Color(0.3019608, 0.5411765, 0.9254902, 0.25882354)
 
 [node name="BoardController" type="CharacterBody3D" unique_id=723564920 node_paths=PackedStringArray("loco_state_machine", "board_target", "Rider_Model", "Cam", "PlayerSFX")]
-collision_mask = 63
+collision_mask = 127
 floor_block_on_wall = false
 floor_max_angle = 1.5707964
 script = ExtResource("1_mkhe7")
 loco_state_machine = NodePath("BoardStateMachine")
-ignore_align_mask = 63
 wall_run_layer = 16
 board_target = NodePath("RyderGear")
 Rider_Model = NodePath("RyderGear/RyderModel")
@@ -9425,6 +9426,9 @@ script = ExtResource("3_70pc1")
 [node name="Airborne" type="Node" parent="BoardStateMachine" unique_id=1274368429]
 script = ExtResource("2_vjvt4")
 
+[node name="TrickAirborne" type="Node" parent="BoardStateMachine" unique_id=1228076063]
+script = ExtResource("7_436y7")
+
 [node name="Wall_Running" type="Node" parent="BoardStateMachine" unique_id=525395192]
 script = ExtResource("6_hwsgt")
 
@@ -9435,6 +9439,9 @@ metadata/_custom_type_script = "uid://covyts21cgpi6"
 [node name="Rail_Glide" type="Node" parent="BoardStateMachine" unique_id=1209737452]
 script = ExtResource("9_436y7")
 metadata/_custom_type_script = "uid://covyts21cgpi6"
+
+[node name="TrickManager" type="Node3D" parent="." unique_id=350297660]
+script = ExtResource("10_fwmga")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=1370903136]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.37995148, 0.10915375)

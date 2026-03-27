@@ -8,9 +8,12 @@ func enter_state() -> void:
 	player.current_jump_charge = 0.0
 	if player.PlayerSFX and player.PlayerSFX.has_method("play_charge_start"):
 		player.PlayerSFX.play_charge_start()
+	print_debug("Enter Jump Charging - Com Visual Juice")
 
 func exit_state() -> void:
 	player.is_charging_jump = false
+	if player.Rider_Model:
+		player.Rider_Model.position.x = 0
 
 func physics_process(delta: float) -> void:
 	player._read_input(delta)
@@ -24,7 +27,7 @@ func physics_process(delta: float) -> void:
 		_release_jump()
 		return
 
-	_update_loco_state()
+	player._apply_surface_gravity(delta)
 	player.move_and_slide()
 
 func _handle_charging_logic(delta: float) -> void:
@@ -37,7 +40,6 @@ func _handle_charging_logic(delta: float) -> void:
 		_release_jump()
 
 func _apply_visual_tension(delta: float) -> void:
-
 	var squash = player.current_jump_charge * 0.4
 	player.target_visual_scale = Vector3(1.0 + squash, 1.0 - squash, 1.0 + squash)
 	
@@ -46,13 +48,12 @@ func _apply_visual_tension(delta: float) -> void:
 		player.Cam.fov = lerp(player.Cam.fov, target_fov, 10.0 * delta)
 
 func _release_jump() -> void:
-	player._execute_jump()
+	var was_trick_jump = player._execute_jump()
 	
 	if player.Cam:
 		player.Cam.fov += 10.0 
 	
-	loco_state_machine.change_state("Airborne")
-
-func _update_loco_state() -> void:
-	if not player.inp_jump_held:
-		loco_state_machine.change_state("Grounded")
+	if was_trick_jump:
+		loco_state_machine.change_state("TrickAirborne")
+	else:
+		loco_state_machine.change_state("Airborne")
