@@ -15,9 +15,11 @@
 [ext_resource type="Texture2D" uid="uid://dgyd8uepklb3g" path="res://HYPERPOP/Assets/Characters/Ryder/Outline.png" id="4_wmvvi"]
 [ext_resource type="Script" uid="uid://bo840wx8beqi3" path="res://start_ik.gd" id="5_34dk1"]
 [ext_resource type="Script" uid="uid://daih5engufvr8" path="res://HYPERPOP/Codes/Movement/wall_running.gd" id="6_hwsgt"]
+[ext_resource type="Script" uid="uid://det1qth3tbps7" path="res://HYPERPOP/Codes/Movement/trick_airborne.gd" id="7_436y7"]
 [ext_resource type="Texture2D" uid="uid://bdmfkut4twad4" path="res://HYPERPOP/Assets/Characters/Ryder/RyderBody.png" id="7_yajaa"]
 [ext_resource type="Script" uid="uid://cwgdi870t4x25" path="res://HYPERPOP/Codes/Movement/boost.gd" id="8_mlmxm"]
 [ext_resource type="Texture2D" uid="uid://c1k2dyy2iqsi6" path="res://HYPERPOP/Assets/Characters/Ryder/HairHighlight.png" id="9_ea84n"]
+[ext_resource type="Script" uid="uid://c4xmwhxxlljjj" path="res://HYPERPOP/Codes/Movement/TrickManager.gd" id="10_fwmga"]
 [ext_resource type="Texture2D" uid="uid://cmkqyv20jputr" path="res://HYPERPOP/Assets/Characters/Ryder/RyderFace.png" id="10_kqmo1"]
 [ext_resource type="Texture2D" uid="uid://dv3wl4v30jfi" path="res://HYPERPOP/Assets/Characters/Ryder/m_msk002_m_alb.png" id="11_skyvc"]
 [ext_resource type="Texture2D" uid="uid://bq44tchloil2r" path="res://HYPERPOP/Assets/Characters/Ryder/m_sht014_alb.png" id="12_3uprp"]
@@ -30,7 +32,9 @@
 [ext_resource type="AudioStream" uid="uid://dminv5tvcbikb" path="res://HYPERPOP/Assets/Sounds/Gameplay Sounds/TestSounds/01_12.wav" id="21_hhrmh"]
 [ext_resource type="AudioStream" uid="uid://ds52lg0tnhay2" path="res://HYPERPOP/Assets/Sounds/Gameplay Sounds/TestSounds/engine.wav" id="22_hwsgt"]
 [ext_resource type="AudioStream" uid="uid://djg1wuheud6tn" path="res://HYPERPOP/Assets/Sounds/Gameplay Sounds/TestSounds/SRN_player_se-005-Synth-player_se-player_002_break_wav.wav" id="23_sek2j"]
-[ext_resource type="AudioStream" uid="uid://shgh1r04o27m" path="res://HYPERPOP/Assets/Sounds/Gameplay Sounds/TestSounds/SRN_player_se-008-Synth-player_se-player_005_kickdash_wav.wav" id="27_4ybf0"]
+[ext_resource type="AudioStream" uid="uid://gnfiecptjlur" path="res://HYPERPOP/Assets/Sounds/Gameplay Sounds/TestSounds/SND_00062.wav" id="29_0kj3p"]
+[ext_resource type="AudioStream" uid="uid://c68gyf5r7ikvh" path="res://HYPERPOP/Assets/Sounds/Gameplay Sounds/TestSounds/SND_00056.wav" id="30_ws6dg"]
+[ext_resource type="AudioStream" uid="uid://bi568o7c65aa8" path="res://HYPERPOP/Assets/Sounds/Gameplay Sounds/TestSounds/SRN_player_se-033-Synth-player_se-player_029_land_aif.wav" id="32_0kj3p"]
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_nlt7y"]
 size = Vector3(1, 1.1162262, 4.4903717)
@@ -9396,17 +9400,23 @@ transparency = 1
 albedo_color = Color(0.3019608, 0.5411765, 0.9254902, 0.25882354)
 
 [node name="BoardController" type="CharacterBody3D" unique_id=723564920 node_paths=PackedStringArray("loco_state_machine", "board_target", "Rider_Model", "Cam", "PlayerSFX")]
-collision_mask = 63
+collision_mask = 127
 floor_block_on_wall = false
 floor_max_angle = 1.5707964
 script = ExtResource("1_mkhe7")
 loco_state_machine = NodePath("BoardStateMachine")
-ignore_align_mask = 63
 wall_run_layer = 16
 board_target = NodePath("RyderGear")
 Rider_Model = NodePath("RyderGear/RyderModel")
 Cam = NodePath("Camera3D")
 PlayerSFX = NodePath("Sound")
+
+[node name="TrickManager" type="Node3D" parent="." unique_id=350297660 node_paths=PackedStringArray("target_to_rotate", "sounds_fx")]
+script = ExtResource("10_fwmga")
+target_to_rotate = NodePath("../RyderGear")
+sounds_fx = NodePath("../Sound")
+spin_sound_cooldown = 0.12
+base_spin_speed = 13.0
 
 [node name="BoardStateMachine" type="Node" parent="." unique_id=1535564651 node_paths=PackedStringArray("initial_state")]
 script = ExtResource("2_sek2j")
@@ -9423,6 +9433,9 @@ script = ExtResource("3_70pc1")
 
 [node name="Airborne" type="Node" parent="BoardStateMachine" unique_id=1274368429]
 script = ExtResource("2_vjvt4")
+
+[node name="TrickAirborne" type="Node" parent="BoardStateMachine" unique_id=1228076063]
+script = ExtResource("7_436y7")
 
 [node name="Wall_Running" type="Node" parent="BoardStateMachine" unique_id=525395192]
 script = ExtResource("6_hwsgt")
@@ -9636,15 +9649,18 @@ process_physics_priority = 300
 script = ExtResource("16_skyvc")
 metadata/_custom_type_script = "uid://bd046eokvcnu2"
 
-[node name="Sound" type="Node3D" parent="." unique_id=1375945813 node_paths=PackedStringArray("sfx_jump_launch", "sfx_jump_charge_loop", "sfx_land", "sfx_drift_loop", "sfx_dash", "sfx_engine_loop", "sfx_brake")]
+[node name="Sound" type="Node3D" parent="." unique_id=1375945813 node_paths=PackedStringArray("sfx_engine_loop", "sfx_drift_loop", "sfx_brake", "sfx_dash", "sfx_boost", "sfx_jump_launch", "sfx_jump_charge_loop", "sfx_land", "sfx_trick_spin", "sfx_land_perfect")]
 script = ExtResource("3_yajaa")
+sfx_engine_loop = NodePath("Sound_Engine")
+sfx_drift_loop = NodePath("Sound_Drift")
+sfx_brake = NodePath("Sound_Brake")
+sfx_dash = NodePath("Sound_Dash")
+sfx_boost = NodePath("Sound_Boost")
 sfx_jump_launch = NodePath("Sound_Jump")
 sfx_jump_charge_loop = NodePath("Sound_ChargeJump")
 sfx_land = NodePath("Sound_Land")
-sfx_drift_loop = NodePath("Sound_Drift")
-sfx_dash = NodePath("Sound_Dash")
-sfx_engine_loop = NodePath("Sound_Engine")
-sfx_brake = NodePath("Sound_Brake")
+sfx_trick_spin = NodePath("Sound_Trick")
+sfx_land_perfect = NodePath("Sound_PerfectLanding")
 
 [node name="Sound_Jump" type="AudioStreamPlayer3D" parent="Sound" unique_id=1336277999]
 stream = ExtResource("17_nlt7y")
@@ -9655,14 +9671,22 @@ stream = ExtResource("18_vjvt4")
 [node name="Sound_Dash" type="AudioStreamPlayer3D" parent="Sound" unique_id=1108839341]
 stream = ExtResource("19_tj2nd")
 
+[node name="Sound_Trick" type="AudioStreamPlayer3D" parent="Sound" unique_id=572650136]
+stream = ExtResource("29_0kj3p")
+
+[node name="Sound_RankUp" type="AudioStreamPlayer3D" parent="Sound" unique_id=1584704949]
+
+[node name="Sound_PerfectLanding" type="AudioStreamPlayer3D" parent="Sound" unique_id=491810145]
+stream = ExtResource("21_hhrmh")
+
 [node name="Sound_Boost" type="AudioStreamPlayer3D" parent="Sound" unique_id=1908019487]
-stream = ExtResource("27_4ybf0")
+stream = ExtResource("30_ws6dg")
 
 [node name="Sound_ChargeJump" type="AudioStreamPlayer3D" parent="Sound" unique_id=875949662]
 stream = ExtResource("20_70pc1")
 
 [node name="Sound_Land" type="AudioStreamPlayer3D" parent="Sound" unique_id=1228071997]
-stream = ExtResource("21_hhrmh")
+stream = ExtResource("32_0kj3p")
 
 [node name="Sound_Engine" type="AudioStreamPlayer3D" parent="Sound" unique_id=112525419]
 stream = ExtResource("22_hwsgt")

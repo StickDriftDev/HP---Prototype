@@ -14,8 +14,8 @@ compatibility/default_parent_skeleton_in_mesh_instance_3d=true
 
 [application]
 
-config/name="HP_Prototype"
-run/main_scene="uid://4pe7evxtfhk6"
+config/name="HyperPOP Prototype"
+run/main_scene="uid://dt01f3gw2ygd3"
 config/features=PackedStringArray("4.6", "Forward Plus")
 config/icon="res://icon.svg"
 
@@ -128,7 +128,8 @@ pause={
 3d_physics/layer_3="Enemys"
 3d_physics/layer_4="Obj"
 3d_physics/layer_5="wall_run_layer"
-3d_physics/layer_6="NormalWall"
+3d_physics/layer_6="World"
+3d_physics/layer_7="Ramps"
 
 [physics]
 
