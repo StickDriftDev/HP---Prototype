@@ -1,0 +1,8 @@
+[gd_scene format=3 uid="uid://b70iq6sa8to86"]
+
+[ext_resource type="Script" uid="uid://dhnirr65a1lb1" path="res://HYPERPOP/Scenes/TEST_LEVELS/Test1/rail_follower.gd" id="1_2cw1k"]
+
+[node name="RailFollower" type="PathFollow3D" unique_id=1096949513 groups=["rail follower"]]
+script = ExtResource("1_2cw1k")
+
+[node name="CSGSphere3D" type="CSGSphere3D" parent="." unique_id=690095899]

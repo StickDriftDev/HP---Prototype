@@ -1,0 +1,28 @@
+[gd_scene format=3 uid="uid://cvt8v1grv80jq"]
+
+[ext_resource type="Script" uid="uid://clby8t2i5mire" path="res://HYPERPOP/Scenes/TEST_LEVELS/Test1/rail_to_grind.gd" id="1_pc1kh"]
+
+[sub_resource type="Curve3D" id="Curve3D_sdtpv"]
+_data = {
+"points": PackedVector3Array(0, 0, 0, 0, 0, 0, 0.3730433, 0, 0.042577267, 0, 0, 0, 0, 0, 0, 0.57909703, 0, -10.196352, 0, 0, 0, 0, 0, 0, 0.7033131, 0, -23.303844, 0, 0, 0, 0, 0, 0, 12.993411, 0, -23.19719, 0, 0, 0, 0, 0, 0, 23.872349, 0, -23.19719, 0, 0, 0, 0, 0, 0, 31.444927, 0, -23.19719, 0, 0, 0, 0, 0, 0, 33.04478, 0, -12.958197, 0, 0, 0, 0, 0, 0, 33.791363, 0, -1.2260178),
+"tilts": PackedFloat32Array(0, 0, 0, 0, 0, 0, 0, 0)
+}
+point_count = 8
+
+[node name="RailToGrind" type="Path3D" unique_id=1638617350]
+curve = SubResource("Curve3D_sdtpv")
+script = ExtResource("1_pc1kh")
+
+[node name="CSGBox3D" type="CSGBox3D" parent="." unique_id=665980146]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.40751863, -0.23388195, -11.47525)
+use_collision = true
+collision_mask = 15
+size = Vector3(1, 1, 23.9505)
+
+[node name="CSGBox3D" type="CSGBox3D" parent="CSGBox3D" unique_id=1198079367]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16, 0, -11.736687)
+size = Vector3(31.380676, 1, 1)
+
+[node name="CSGBox3D" type="CSGBox3D" parent="CSGBox3D/CSGBox3D" unique_id=515815168]
+transform = Transform3D(0.9935065, 0, 0.11377545, 0, 1, 0, -0.11377545, 0, 0.9935065, 16.203531, 0, 10.90867)
+size = Vector3(1, 1, 21.936401)

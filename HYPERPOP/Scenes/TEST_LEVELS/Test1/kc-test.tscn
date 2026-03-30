@@ -4,6 +4,7 @@
 [ext_resource type="PackedScene" uid="uid://bt74p0pm4ea0b" path="res://HYPERPOP/Codes/Movement/board_controller.tscn" id="2_3wh3v"]
 [ext_resource type="PackedScene" uid="uid://dm4ne4sl47gnl" path="res://HYPERPOP/Codes/HUD/boost_bar.tscn" id="3_sdtpv"]
 [ext_resource type="PackedScene" uid="uid://dpg24kp8whij4" path="res://HYPERPOP/Codes/Pause Ui/pause_menu.tscn" id="4_jvh82"]
+[ext_resource type="PackedScene" uid="uid://cvt8v1grv80jq" path="res://HYPERPOP/Scenes/TEST_LEVELS/Test1/rail_to_grind.tscn" id="5_jvh82"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_sdtpv"]
 
@@ -29,12 +30,6 @@ texture_filter = 0
 [sub_resource type="ConcavePolygonShape3D" id="ConcavePolygonShape3D_4w0cu"]
 data = PackedVector3Array(-200, 0.5, 200, 200, 0.5, 200, -200, -0.5, 200, 200, 0.5, 200, 200, -0.5, 200, -200, -0.5, 200, 200, 0.5, -200, -200, 0.5, -200, 200, -0.5, -200, -200, 0.5, -200, -200, -0.5, -200, 200, -0.5, -200, 200, 0.5, 200, 200, 0.5, -200, 200, -0.5, 200, 200, 0.5, -200, 200, -0.5, -200, 200, -0.5, 200, -200, 0.5, -200, -200, 0.5, 200, -200, -0.5, -200, -200, 0.5, 200, -200, -0.5, 200, -200, -0.5, -200, 200, 0.5, 200, -200, 0.5, 200, 200, 0.5, -200, -200, 0.5, 200, -200, 0.5, -200, 200, 0.5, -200, -200, -0.5, 200, 200, -0.5, 200, -200, -0.5, -200, 200, -0.5, 200, 200, -0.5, -200, -200, -0.5, -200)
 
-[sub_resource type="BoxMesh" id="BoxMesh_jvh82"]
-
-[sub_resource type="BoxShape3D" id="BoxShape3D_sdtpv"]
-
-[sub_resource type="CylinderShape3D" id="CylinderShape3D_jvh82"]
-
 [node name="KcTest" type="Node3D" unique_id=2094729614]
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=1129483894]
@@ -52,8 +47,10 @@ collision_mask = 7
 [node name="CollisionShape3D" type="CollisionShape3D" parent="Floor/StaticBody3D" unique_id=1561190252]
 shape = SubResource("ConcavePolygonShape3D_4w0cu")
 
-[node name="BoardController" parent="." unique_id=723564920 instance=ExtResource("2_3wh3v")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1.3162498, 0)
+[node name="BoardController" parent="." unique_id=723564920 groups=["player"] instance=ExtResource("2_3wh3v")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 14.103312, -5.4876366)
+collision_mask = 63
+ignore_align_mask = 63
 
 [node name="PlayerHud" type="Node" parent="." unique_id=302137040]
 
@@ -71,21 +68,4 @@ light_specular = 2.644
 shadow_enabled = true
 shadow_blur = 0.0
 
-[node name="MeshInstance3D" type="MeshInstance3D" parent="." unique_id=1041444861]
-transform = Transform3D(0.78605586, 0, 0, 0, 0.7953616, 12.264491, 0, -41.803085, 0.23334889, -4.094063, 0.19804835, -9.603926)
-mesh = SubResource("BoxMesh_jvh82")
-
-[node name="StaticBody3D" type="StaticBody3D" parent="MeshInstance3D" unique_id=1319115333]
-transform = Transform3D(1, 0, 0, 0, 0.99999994, 0, 0, 0, 1, 0, 0, 0)
-collision_layer = 32
-collision_mask = 7
-
-[node name="CollisionShape3D" type="CollisionShape3D" parent="MeshInstance3D/StaticBody3D" unique_id=1225823426]
-transform = Transform3D(1, 0, 0, 0, 0.99999994, 0, 0, 0, 1, 0, 0, 0)
-shape = SubResource("BoxShape3D_sdtpv")
-
-[node name="Area3D" type="Area3D" parent="MeshInstance3D" unique_id=622953869]
-
-[node name="CollisionShape3D" type="CollisionShape3D" parent="MeshInstance3D/Area3D" unique_id=909217956]
-transform = Transform3D(1, 0, 0, 0, 0.99999994, 0, 0, 0, 1, 0, 0, 0)
-shape = SubResource("CylinderShape3D_jvh82")
+[node name="RailToGrind" parent="." unique_id=1638617350 groups=["Rail"] instance=ExtResource("5_jvh82")]
