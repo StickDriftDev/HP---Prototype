@@ -64,8 +64,6 @@ func _update_loco_state() -> void:
 	
 	if grind_rail_cast.is_colliding():
 		loco_state_machine.change_state("Rail_Glide")
-	if grind_rail_cast.is_colliding():
-		print_debug("rail")
 
 # Rail Landing and board state change
 func _landing_on_rail():

@@ -7,7 +7,6 @@ var grinding = false
 var local_starting_progress = 0.0
 
 @onready var origin_point = null
-
 @onready var chosen = false
 @onready var forward = true
 @onready var direction_selected = false
@@ -20,7 +19,6 @@ func _ready():
 	origin_point = path_follow_3d.progress
 
 func _process(delta):
-	
 	if grinding:
 		if forward:
 			path_follow_3d.progress += move_speed * delta
@@ -37,7 +35,7 @@ func _process(delta):
 			grinding = false
 			direction_selected = false
 			
-	if has_node("Player") or chosen:
+	if has_node("BoardController") or chosen:
 		grinding = true
 	else:
 		grinding = false

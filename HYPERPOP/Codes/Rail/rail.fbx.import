@@ -4,12 +4,12 @@ importer="scene"
 importer_version=1
 type="PackedScene"
 uid="uid://cfs6vqd5ttdnc"
-path="res://.godot/imported/rail.fbx-5749613ddd79d171826e3aa3be619ec5.scn"
+path="res://.godot/imported/rail.fbx-b32ffe3728a27b47167d7246f97b0e3a.scn"
 
 [deps]
 
-source_file="res://HYPERPOP/Scenes/TEST_LEVELS/Test1/rail.fbx"
-dest_files=["res://.godot/imported/rail.fbx-5749613ddd79d171826e3aa3be619ec5.scn"]
+source_file="res://HYPERPOP/Codes/Rail/rail.fbx"
+dest_files=["res://.godot/imported/rail.fbx-b32ffe3728a27b47167d7246f97b0e3a.scn"]
 
 [params]
 
