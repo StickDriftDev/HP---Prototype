@@ -43,11 +43,11 @@ signal trick_finished(final_rank: String, success: bool)
 @export var perfect_landing_threshold: float = 0.85
 
 @export var rank_thresholds: Dictionary = {
-	"C": 1.0, "B": 3.0, "A": 5.5, "S": 8.5, "X": 12.0
+	"Z": 1.0, "B": 3.0, "A": 5.5, "S": 8.5, "X": 12.0
 }
 
 var rank_pitch_map: Dictionary = {
-	"C": 1.0, "B": 1.1, "A": 1.25, "S": 1.45, "X": 1.7
+	"Z": 1.0, "B": 1.1, "A": 1.25, "S": 1.45, "X": 1.7
 }
 
 # =================================================
@@ -59,7 +59,8 @@ var _last_sound_time: float = 0.0
 var current_points: float = 0.0
 
 var jump_performance: float = 1.0 
-var highest_rank_achieved: String = "C"
+var highest_rank_achieved: String = "Z"
+var current_ramp_speed_mult: float = 1.0 
 
 var current_spin_angles: Vector3 = Vector3.ZERO
 var spin_velocity: Vector3 = Vector3.ZERO
@@ -67,7 +68,8 @@ var last_input_length: float = 0.0
 
 # =================================================
 # LIFECYCLE & CORE
-func start_tricks(jump_power: float = 1.0) -> void:
+
+func start_tricks(jump_power: float = 1.0, trick_multiplier: float = 1.0) -> void:
 	is_active = true
 	total_spins_accumulated = 0.0
 	_last_sound_spin_marker = 0.0
@@ -75,8 +77,9 @@ func start_tricks(jump_power: float = 1.0) -> void:
 	current_spin_angles = Vector3.ZERO
 	spin_velocity = Vector3.ZERO
 	last_input_length = 0.0
-	highest_rank_achieved = "C"
+	highest_rank_achieved = "Z"
 	jump_performance = max(1.0, jump_power)
+	current_ramp_speed_mult = trick_multiplier
 	current_points = 0.0
 	
 	if jump_performance > 1.8:
@@ -92,13 +95,13 @@ func process_trick_input(delta: float) -> void:
 	last_input_length = input.length()
 
 	if last_input_length > 0.1:
-		var dynamic_speed = base_spin_speed * jump_performance
-		var torque = base_acceleration * jump_performance
+		var dynamic_speed = base_spin_speed * jump_performance * current_ramp_speed_mult
+		var torque = base_acceleration * jump_performance * current_ramp_speed_mult
 		
 		var target_vel = Vector3(
 			input_y * dynamic_speed,
 			-input_x * dynamic_speed,
-			(input_x * input_y) * (base_spin_speed * roll_style_amount * jump_performance)
+			(input_x * input_y) * (base_spin_speed * roll_style_amount * jump_performance * current_ramp_speed_mult)
 		)
 		spin_velocity = spin_velocity.lerp(target_vel, torque * delta)
 	else:
@@ -157,11 +160,9 @@ func finish_tricks() -> String:
 	
 	var is_perfect = is_safe and (alignment >= perfect_landing_threshold)
 	
-	# --- DEBUG LOG ---
 	if player and player.debug_enabled:
-		var status_text = "PEFECT LANDING!" if is_perfect else ("SUCESS" if is_safe else "CRASH/FAIL")
+		var status_text = "PERFECT LANDING!" if is_perfect else ("SUCCESS" if is_safe else "CRASH/FAIL")
 		print_debug("[TrickManager] Result: %s | Final Rank : %s | Points: %.0f" % [status_text, final_rank, current_points])
-	# -----------------
 	
 	if is_safe:
 		_process_rewards(final_rank, is_perfect)
@@ -186,27 +187,32 @@ func _get_alignment() -> float:
 	var world_up = player.global_transform.basis.y.normalized()
 	return model_up.dot(world_up)
 
+# --- MODIFICAÇÃO: RECOMPENSA DE REGENERAÇÃO ---
 func _process_rewards(rank: String, perfect: bool) -> void:
-	var boost_gain = 0.0
+	var regen_amount = 0.0
 	var speed_mult = 1.0
 	
 	match rank:
-		"C": boost_gain = 0.5; speed_mult = 1.05
-		"B": boost_gain = 1.5; speed_mult = 1.15
-		"A": boost_gain = 3.0; speed_mult = 1.3
-		"S": boost_gain = 5.0; speed_mult = 1.5
-		"X": boost_gain = 8.0; speed_mult = 1.8
+		"Z": regen_amount = 0.2; speed_mult = 1.05
+		"B": regen_amount = 0.6; speed_mult = 1.15
+		"A": regen_amount = 1.2; speed_mult = 1.3
+		"S": regen_amount = 2.5; speed_mult = 1.5
+		"X": regen_amount = 4.0; speed_mult = 1.8
 
 	if perfect:
+		regen_amount += 0.5
 		speed_mult += 0.4
 		player.current_shake = 0.8
 	
-	player.current_boost_segments += boost_reward_scaled(boost_gain)
+	# Cálculo final da regeneração
+	var final_regen = regen_amount * (0.5 + jump_performance * 0.5)
+
+	# Chama a regeneração gradual no Player
+	if player.has_method("adicionar_regeneracao_boost"):
+		player.adicionar_regeneracao_boost(final_regen)
+
 	if "current_speed" in player:
 		player.current_speed *= speed_mult
-
-func boost_reward_scaled(base_reward: float) -> float:
-	return base_reward * (0.5 + jump_performance * 0.5)
 
 func _process_crash() -> void:
 	if "current_speed" in player:
@@ -231,12 +237,9 @@ func _visual_reset(perfect: bool, safe: bool) -> void:
 	tween.tween_property(target_to_rotate, "scale", Vector3.ONE, dur * 1.5)\
 		.set_trans(Tween.TRANS_BOUNCE).set_ease(Tween.EASE_OUT)
 
-func _check_rank_up() -> void:
-	pass
-
 func get_current_rank() -> String:
-	var rank = "C"
-	for r in ["C", "B", "A", "S", "X"]:
+	var rank = "Z"
+	for r in ["Z", "B", "A", "S", "X"]:
 		if total_spins_accumulated >= rank_thresholds[r]:
 			rank = r
 	return rank

@@ -106,7 +106,7 @@ func _handle_landing_juice(rank: String) -> void:
 		player.current_shake = 1.5
 		return
 
-	var intensity = {"C":1.0, "B":1.4, "A":1.8, "S":2.5, "X":3.5}.get(rank, 1.0)
+	var intensity = {"Z":1.0, "B":1.4, "A":1.8, "S":2.5, "X":3.5}.get(rank, 1.0)
 	
 	Engine.time_scale = 0.05
 	player.current_shake = 0.4 * intensity

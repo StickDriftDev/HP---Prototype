@@ -4,7 +4,7 @@ class_name BoardController
 signal boost_modified(segmentos_atuais: float, segmentos_maximos: int)
 signal jumped()
 signal landed(impact_strength: float)
-
+@onready var trick_manager: TrickManager = $TrickManager
 # =================================================
 # LOCOMOTION STATE
 @export var loco_state_machine: Node
@@ -103,6 +103,8 @@ var drift_charge: float = 0.0
 @export var boost_duration_per_segment: float = 1.2
 @export var boost_fov_kick: float = 20.0
 var boost_timer: float = 0.0
+var boost_regen_pendente: float = 0.0
+@export var regen_speed: float = 1.5
 
 # =================================================
 # DEBUG
@@ -163,6 +165,19 @@ var inp_drift: bool = false
 var inp_jump_held: bool = false
 var inp_pitch: float = 0.0
 var inp_boost: bool = false
+
+func _process(delta: float) -> void:
+	if boost_regen_pendente > 0:
+		var recarga = regen_speed * delta
+		recarga = min(recarga, boost_regen_pendente)
+		var anterior = current_boost_segments
+		current_boost_segments = min(current_boost_segments + recarga, max_boost_segments)
+		boost_regen_pendente -= recarga
+		if anterior != current_boost_segments:
+			boost_modified.emit(current_boost_segments, max_boost_segments)
+			
+func adicionar_regeneracao_boost(quantidade: float):
+	boost_regen_pendente += quantidade
 
 # =================================================
 # LIFECYCLE
@@ -236,6 +251,8 @@ func _physics_process(delta: float) -> void:
 # TRICK RAMP RECEPTION LOGIC
 
 func prepare_ramp_jump(launch_vel: Vector3, custom_grav: float, ramp_dir: Vector3, is_perfect: bool, trick_speed: float) -> void:
+	velocity = launch_vel
+	trick_manager.start_tricks(1.0, trick_speed) 
 	var look_target = global_position + ramp_dir
 	look_target.y = global_position.y
 	if global_position.distance_to(look_target) > 0.01:
@@ -248,6 +265,9 @@ func prepare_ramp_jump(launch_vel: Vector3, custom_grav: float, ramp_dir: Vector
 	is_trick_launch = true
 	if loco_state_machine and loco_state_machine.has_method("change_state"):
 		loco_state_machine.change_state("TrickAirborne")
+	
+	if trick_manager:
+		trick_manager.start_tricks(1.0, trick_speed)
 	
 	if is_perfect:
 		target_visual_scale = Vector3(0.4, 1.8, 0.4) 

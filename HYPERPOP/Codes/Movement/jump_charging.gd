@@ -3,6 +3,8 @@ class_name JumpCharging
 
 @onready var player: BoardController = get_parent().get_parent()
 
+@export var jump_charge_boost_cost: float = 0.2
+
 func enter_state() -> void:
 	player.is_charging_jump = true
 	player.current_jump_charge = 0.0
@@ -29,6 +31,9 @@ func physics_process(delta: float) -> void:
 
 func _handle_charging_logic(delta: float) -> void:
 	if player.inp_jump_held:
+		if player.current_boost_segments > 0:
+			player.current_boost_segments -= jump_charge_boost_cost * delta
+		
 		player.current_jump_charge = move_toward(player.current_jump_charge, 1.0, delta / player.max_charge_time)
 		
 		if player.current_jump_charge > 0.5:
@@ -37,12 +42,11 @@ func _handle_charging_logic(delta: float) -> void:
 		_release_jump()
 
 func _apply_visual_tension(delta: float) -> void:
-
 	var squash = player.current_jump_charge * 0.4
 	player.target_visual_scale = Vector3(1.0 + squash, 1.0 - squash, 1.0 + squash)
 	
 	if player.Cam:
-		var target_fov = player.base_fov - (5.0 * player.current_jump_charge)
+		var target_fov = player.base_fov - (2.0 * player.current_jump_charge)
 		player.Cam.fov = lerp(player.Cam.fov, target_fov, 10.0 * delta)
 
 func _release_jump() -> void:

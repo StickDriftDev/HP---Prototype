@@ -15,11 +15,11 @@
 [ext_resource type="Texture2D" uid="uid://dgyd8uepklb3g" path="res://HYPERPOP/Assets/Characters/Ryder/Outline.png" id="4_wmvvi"]
 [ext_resource type="Script" uid="uid://bo840wx8beqi3" path="res://start_ik.gd" id="5_34dk1"]
 [ext_resource type="Script" uid="uid://daih5engufvr8" path="res://HYPERPOP/Codes/Movement/wall_running.gd" id="6_hwsgt"]
-[ext_resource type="Script" uid="uid://det1qth3tbps7" path="res://HYPERPOP/Codes/Movement/trick_airborne.gd" id="7_436y7"]
+[ext_resource type="Script" uid="uid://sb0cpp7yj0jt" path="res://HYPERPOP/Codes/Movement/trick_airborne.gd" id="7_436y7"]
 [ext_resource type="Texture2D" uid="uid://bdmfkut4twad4" path="res://HYPERPOP/Assets/Characters/Ryder/RyderBody.png" id="7_yajaa"]
 [ext_resource type="Script" uid="uid://cwgdi870t4x25" path="res://HYPERPOP/Codes/Movement/boost.gd" id="8_mlmxm"]
 [ext_resource type="Texture2D" uid="uid://c1k2dyy2iqsi6" path="res://HYPERPOP/Assets/Characters/Ryder/HairHighlight.png" id="9_ea84n"]
-[ext_resource type="Script" uid="uid://c4xmwhxxlljjj" path="res://HYPERPOP/Codes/Movement/TrickManager.gd" id="10_fwmga"]
+[ext_resource type="Script" uid="uid://b864fteqkjcmp" path="res://HYPERPOP/Codes/Movement/TrickManager.gd" id="10_fwmga"]
 [ext_resource type="Texture2D" uid="uid://cmkqyv20jputr" path="res://HYPERPOP/Assets/Characters/Ryder/RyderFace.png" id="10_kqmo1"]
 [ext_resource type="Texture2D" uid="uid://dv3wl4v30jfi" path="res://HYPERPOP/Assets/Characters/Ryder/m_msk002_m_alb.png" id="11_skyvc"]
 [ext_resource type="Texture2D" uid="uid://bq44tchloil2r" path="res://HYPERPOP/Assets/Characters/Ryder/m_sht014_alb.png" id="12_3uprp"]
@@ -36,8 +36,9 @@
 [ext_resource type="AudioStream" uid="uid://c68gyf5r7ikvh" path="res://HYPERPOP/Assets/Sounds/Gameplay Sounds/TestSounds/SND_00056.wav" id="30_ws6dg"]
 [ext_resource type="AudioStream" uid="uid://bi568o7c65aa8" path="res://HYPERPOP/Assets/Sounds/Gameplay Sounds/TestSounds/SRN_player_se-033-Synth-player_se-player_029_land_aif.wav" id="32_0kj3p"]
 
-[sub_resource type="BoxShape3D" id="BoxShape3D_nlt7y"]
-size = Vector3(1, 1.1162262, 4.4903717)
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_0kj3p"]
+radius = 0.79833984
+height = 4.8535156
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_0h2nr"]
 resource_name = "Material.002"
@@ -9445,8 +9446,8 @@ script = ExtResource("8_mlmxm")
 metadata/_custom_type_script = "uid://covyts21cgpi6"
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=1370903136]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.37995148, 0.10915375)
-shape = SubResource("BoxShape3D_nlt7y")
+transform = Transform3D(1, 0, 0, 0, -4.371139e-08, -1, 0, 1, -4.371139e-08, 0, -0.37995148, 0.14919281)
+shape = SubResource("CapsuleShape3D_0kj3p")
 
 [node name="RyderGear" parent="." unique_id=712845337 instance=ExtResource("2_5q8gg")]
 
@@ -9636,12 +9637,13 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.2901897, 4.264018)
 [node name="CAM_LOOK" type="Node3D" parent="." unique_id=47440700]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5107327, -4.9239645)
 
-[node name="Camera3D" type="Camera3D" parent="." unique_id=516232994 node_paths=PackedStringArray("player", "camera_node")]
+[node name="Camera3D" type="Camera3D" parent="." unique_id=516232994 node_paths=PackedStringArray("player")]
 physics_interpolation_mode = 1
-transform = Transform3D(1, 0, 0, 0, 0.9900149, 0.14096276, 0, -0.14096276, 0.9900149, 0, 0, 0)
+transform = Transform3D(1, 0, 0, 0, 0.9900149, 0.14096276, 0, -0.14096276, 0.9900149, 0, 2.0685678, 5.0482473)
 script = ExtResource("15_kqmo1")
 player = NodePath("..")
-camera_node = NodePath(".")
+height_speed_gain = 1.0
+speed_fov_boost = 15.0
 
 [node name="PhantomCameraHost" type="Node" parent="Camera3D" unique_id=2016912474]
 process_priority = 300

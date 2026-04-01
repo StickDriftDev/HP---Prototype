@@ -27,6 +27,10 @@ PhantomCameraManager="*uid://duq6jhf6unyis"
 
 enabled=PackedStringArray("res://addons/phantom_camera/plugin.cfg")
 
+[global_group]
+
+wall_run=""
+
 [input]
 
 forward={
