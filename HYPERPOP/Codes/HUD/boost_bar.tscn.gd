@@ -68,7 +68,7 @@ func _animate_bar(target: float, perc: float) -> void:
 		_tween_value.kill()
 	
 	_tween_value = create_tween().set_parallel(true)
-	_tween_value.tween_property(progress_bar, "value", target, 0.15)\
+	_tween_value.tween_property(progress_bar, "value", target, 0.05)\
 		.set_trans(Tween.TRANS_CUBIC)\
 		.set_ease(Tween.EASE_OUT)
 	
@@ -88,10 +88,10 @@ func _apply_juice(spent: bool, maximum: bool) -> void:
 		_impact_shake = 0.7
 		
 	elif spent:
-		scale = original_scale * 0.88
+		scale = original_scale * 0.95 
 		progress_bar.modulate = color_flash
-		_impact_shake = 1.4
-		position = original_position + Vector2(randf_range(-2.5, 2.5), randf_range(-2.5, 2.5)) * 18.0
+		_impact_shake = 0.15
+		position = original_position + Vector2(randf_range(-1.0, 1.0), randf_range(-1.0, 1.0)) * 4.0
 		
 	else:
 		scale = original_scale * 1.06
