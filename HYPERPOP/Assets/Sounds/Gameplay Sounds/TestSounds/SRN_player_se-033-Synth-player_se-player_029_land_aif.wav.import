@@ -1,0 +1,24 @@
+[remap]
+
+importer="wav"
+type="AudioStreamWAV"
+uid="uid://bi568o7c65aa8"
+path="res://.godot/imported/SRN_player_se-033-Synth-player_se-player_029_land_aif.wav-7155d78228ec147a2166931a067f6851.sample"
+
+[deps]
+
+source_file="res://HYPERPOP/Assets/Sounds/Gameplay Sounds/TestSounds/SRN_player_se-033-Synth-player_se-player_029_land_aif.wav"
+dest_files=["res://.godot/imported/SRN_player_se-033-Synth-player_se-player_029_land_aif.wav-7155d78228ec147a2166931a067f6851.sample"]
+
+[params]
+
+force/8_bit=false
+force/mono=false
+force/max_rate=false
+force/max_rate_hz=44100
+edit/trim=false
+edit/normalize=false
+edit/loop_mode=0
+edit/loop_begin=0
+edit/loop_end=-1
+compress/mode=2

@@ -4,7 +4,7 @@ class_name BoardController
 signal boost_modified(segmentos_atuais: float, segmentos_maximos: int)
 signal jumped()
 signal landed(impact_strength: float)
-
+@onready var trick_manager: TrickManager = $TrickManager
 # =================================================
 # LOCOMOTION STATE
 @export var loco_state_machine: Node
@@ -22,11 +22,11 @@ signal landed(impact_strength: float)
 @export var rotation_smoothing: float = 12.0
 
 # =================================================
-# CONFIG — JUMP & PHYSICS 
+# CONFIG — JUMP & PHYSICS JUICE
 @export_category("Jump & Physics")
 @export var min_jump_force: float = 12.0
 @export var max_jump_force: float = 35.0
-@export var jump_charge_drag: float = 0.8
+@export var jump_charge_drag: float = 0.2
 @export var max_charge_time: float = 0.8
 @export var gravity_mul: float = 4.0
 @export var apex_float_multiplier: float = 0.6
@@ -40,7 +40,6 @@ signal landed(impact_strength: float)
 
 # =================================================
 # CONFIG — WALL RUN & DRIFT
-@export_category("Tricks & Tech")
 @export_group("Wall Running")
 @export var enable_wall_running: bool = true
 @export_flags_3d_physics var wall_run_layer: int = 5
@@ -104,6 +103,8 @@ var drift_charge: float = 0.0
 @export var boost_duration_per_segment: float = 1.2
 @export var boost_fov_kick: float = 20.0
 var boost_timer: float = 0.0
+var boost_regen_pendente: float = 0.0
+@export var regen_speed: float = 1.5
 
 # =================================================
 # DEBUG
@@ -111,7 +112,7 @@ var boost_timer: float = 0.0
 @export var debug_enabled: bool = true
 
 # =================================================
-# STATE VARIABLES 
+# STATE VARIABLES
 var current_speed: float = 0.0
 var input_dir: Vector2 = Vector2.ZERO
 var smoothed_input_x: float = 0.0
@@ -135,6 +136,7 @@ var _can_ramp_jump: bool = false
 var _ramp_launch_vel: Vector3 = Vector3.ZERO
 var _ramp_dir: Vector3 = Vector3.ZERO
 var custom_ramp_gravity: float = 10
+var trick_rotation_multiplier: float = 1.0
 
 var is_drifting: bool = false
 var is_wall_running: bool = false
@@ -163,6 +165,19 @@ var inp_drift: bool = false
 var inp_jump_held: bool = false
 var inp_pitch: float = 0.0
 var inp_boost: bool = false
+
+func _process(delta: float) -> void:
+	if boost_regen_pendente > 0:
+		var recarga = regen_speed * delta
+		recarga = min(recarga, boost_regen_pendente)
+		var anterior = current_boost_segments
+		current_boost_segments = min(current_boost_segments + recarga, max_boost_segments)
+		boost_regen_pendente -= recarga
+		if anterior != current_boost_segments:
+			boost_modified.emit(current_boost_segments, max_boost_segments)
+			
+func adicionar_regeneracao_boost(quantidade: float):
+	boost_regen_pendente += quantidade
 
 # =================================================
 # LIFECYCLE
@@ -220,6 +235,7 @@ func _physics_process(delta: float) -> void:
 	move_and_slide()
 	_detect_wall_running()
 	_apply_ramp_boost_on_leave()
+	
 	if velocity.length() > absolute_speed_cap:
 		velocity = velocity.limit_length(absolute_speed_cap)
 	
@@ -234,15 +250,37 @@ func _physics_process(delta: float) -> void:
 # =================================================
 # TRICK RAMP RECEPTION LOGIC
 
-func prepare_ramp_jump(launch_vel: Vector3, custom_grav: float, ramp_dir: Vector3) -> void:
-	apply_ramp_launch(launch_vel, custom_grav, ramp_dir)
+func prepare_ramp_jump(launch_vel: Vector3, custom_grav: float, ramp_dir: Vector3, is_perfect: bool, trick_speed: float) -> void:
+	velocity = launch_vel
+	trick_manager.start_tricks(1.0, trick_speed) 
+	var look_target = global_position + ramp_dir
+	look_target.y = global_position.y
+	if global_position.distance_to(look_target) > 0.01:
+		look_at(look_target, Vector3.UP)
 	
-	_can_ramp_jump = true
-	_ramp_dir = ramp_dir
+	velocity = launch_vel
+	trick_custom_gravity = custom_grav
+	current_speed = Vector2(velocity.x, velocity.z).length()
+	
+	is_trick_launch = true
+	if loco_state_machine and loco_state_machine.has_method("change_state"):
+		loco_state_machine.change_state("TrickAirborne")
+	
+	if trick_manager:
+		trick_manager.start_tricks(1.0, trick_speed)
+	
+	if is_perfect:
+		target_visual_scale = Vector3(0.4, 1.8, 0.4) 
+		current_shake = 0.3
+	else:
+		target_visual_scale = Vector3(0.5, 1.6, 0.5)
+
+	if PlayerSFX and PlayerSFX.has_method("play_jump_launch"): 
+		PlayerSFX.play_jump_launch()
 	
 	await get_tree().create_timer(0.25).timeout
 	_can_ramp_jump = false
-
+	
 func _execute_special_ramp_launch() -> void:
 	_can_ramp_jump = false 
 	
@@ -281,7 +319,17 @@ func apply_ramp_launch(launch_velocity: Vector3, custom_gravity: float, ramp_dir
 	target_visual_scale = Vector3(0.5, 1.6, 0.5)
 	if PlayerSFX and PlayerSFX.has_method("play_jump_launch"): 
 		PlayerSFX.play_jump_launch()
-		
+
+# =================================================
+# TRICK SYSTEM 
+func pulse_trick_juice() -> void:
+	current_visual_scale = Vector3(0.6, 1.5, 0.6)
+	target_visual_scale = Vector3(1.1, 0.9, 1.1)
+	current_shake = max(current_shake, 0.15)
+	
+	if Cam:
+		Cam.fov = min(Cam.fov + 12.0, base_fov + 45.0)
+
 # =================================================
 # CORE LOGIC
 
@@ -344,7 +392,6 @@ func _apply_rotation(delta: float) -> void:
 	if is_charging_jump: turn_scale = 0.4
 	elif is_drifting: turn_scale *= drift_turn_multiplier
 	elif not is_on_floor(): turn_scale = air_rotation_multiplier
-	
 	if is_boosting: turn_scale *= 0.7
 	rotate_object_local(Vector3.UP, smoothed_input_x * rotation_speed * turn_scale * delta)
 
@@ -476,13 +523,15 @@ func _update_visuals_and_juice(delta: float) -> void:
 	target_visual_scale = target_visual_scale.lerp(Vector3.ONE, 8.0 * delta)
 	if Rider_Model: Rider_Model.scale = current_visual_scale
 	if board_target:
-		var speed_lean_factor = clamp(current_speed / lean_speed_threshold, 0.0, 1.0)
-		var target_tilt = -smoothed_input_x * (max_lean_angle * speed_lean_factor)
-		if is_drifting: target_tilt *= drift_lean_multiplier
-		current_tilt = lerp(current_tilt, target_tilt, lean_responsiveness * delta)
-		var crouch = crouch_tilt_amount if is_charging_jump else 0.0
-		var final_basis = Basis.IDENTITY.rotated(Vector3.FORWARD, current_tilt).rotated(Vector3.RIGHT, crouch + current_air_pitch)
-		board_target.transform.basis = board_target.transform.basis.slerp(final_basis, 18.0 * delta)
+		if not is_trick_launch:
+			var speed_lean_factor = clamp(current_speed / lean_speed_threshold, 0.0, 1.0)
+			var target_tilt = -smoothed_input_x * (max_lean_angle * speed_lean_factor)
+			if is_drifting: target_tilt *= drift_lean_multiplier
+			current_tilt = lerp(current_tilt, target_tilt, lean_responsiveness * delta)
+			var crouch = crouch_tilt_amount if is_charging_jump else 0.0
+			var final_basis = Basis.IDENTITY.rotated(Vector3.FORWARD, current_tilt).rotated(Vector3.RIGHT, crouch + current_air_pitch)
+			board_target.transform.basis = board_target.transform.basis.slerp(final_basis, 18.0 * delta)
+			
 	if Cam:
 		var dashing = dash_timer > 0.0 or is_boosting
 		var target_fov = base_fov + ((current_speed / max_speed) * base_fov * dynamic_fov_influence)
@@ -521,5 +570,14 @@ func _update_debug_ui() -> void:
 		label.text = "[b]SPEED:[/b] %.1f\n" % current_speed
 		label.text += "[b]BOOST SEGMENTS:[/b] %d\n" % full_segments
 		label.text += "[b]STATE:[/b] %s\n" % state
-		label.text += "[b]TRICK LAUNCH:[/b] %s\n" % str(is_trick_launch)
-		label.text += "[b]RAMP WINDOW:[/b] %s" % ("READY" if _can_ramp_jump else "---")
+		var tm = get_node_or_null("TrickManager") 
+		if tm:
+			if tm.is_active:
+				label.text += "\n\n[color=YELLOW][b]>> PERFORMING TRICKS <<[/b][/color]"
+				label.text += "\n[b]PONITS:[/b] [color=WHITE]%d[/color]" % tm.current_points
+				label.text += "\n[b]TRICKS:[/b] %.2f" % tm.total_spins_accumulated
+			elif is_on_floor() and tm.highest_rank_achieved != "C":
+				var color = "CYAN" if tm.highest_rank_achieved != "FAIL" else "RED"
+				label.text += "\n\n[color=ORANGE][b]>> LAST TRICK RESULT <<[/b][/color]"
+				label.text += "\n[b]FINAL RANK :[/b] [color=%s][i]%s[/i][/color]" % [color, tm.highest_rank_achieved]
+				label.text += "\n[b]TOTAL POINTS :[/b] %d" % tm.current_points

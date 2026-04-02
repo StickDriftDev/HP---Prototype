@@ -1,151 +1,149 @@
 extends Camera3D
-class_name CameraController
+class_name RidersProCameraController
 
 @export var player: CharacterBody3D
-@export var target_height: float = 1.5
-@export var camera_node: Camera3D
 
-@export_category("Dynamics")
-@export var move_lerp_speed: float = 20.0
-@export var rotation_lerp_speed: float = 15.0
-@export var auto_align_speed: float = 8.0
-@export var stick_sensitivity: float = 3.0
-@export var mouse_sensitivity: float = 0.002
+@export_category("Distance and Height")
+@export var distance: float = 10.0
+@export var target_height: float = 2.5
+@export var height_speed_gain: float = 2.0 
 
-@export_category("Distance & Height")
-@export var idle_distance: float = 9
-@export var normal_distance: float = 10
-@export var max_distance: float = 14
-@export var base_height: float = 7.0
-@export var distance_smooth: float = 12.0
-@export var absolute_max_limit: float = 12.0
+@export_category("FOV")
+@export var base_fov: float = 75.0
+@export var speed_fov_boost: float = 10.0 
+@export var max_speed_reference: float = 50.0
 
-@export_category("FOV Settings")
-@export var fov_idle: float = 70.0
-@export var fov_speed: float = 100.0
-@export var fov_boost: float = 125.0
-@export var fov_lerp_speed: float = 8.0
+@export_category("Boost")
+@export var boost_distance_surge: float = 1.5 
+@export var boost_return_speed: float = 8.0   
 
-@export_category("Cinematic & Roll")
-@export var look_ahead_strength: float = 6.0
-@export var turn_roll_strength: float = 0.45
-@export var drift_roll_multiplier: float = 3.5
-@export var inertia_strength: float = 5.0
+@export_category("Juice Effects")
+@export var fov_boost_punch: float = 12.0
+@export var acceleration_fov_influence: float = 0.15
 
-var yaw := 0.0
-var pitch := -0.1
-var roll := 0.0
+@export_category("Speed Lean Limiter")
+@export var lean_start_speed: float = 20.0
+@export var max_lean_angle_degrees: float = 35.0
+# -------------------------------------------------------
 
-var current_distance := 5.0
-var current_height := 2.0
-var velocity_offset := Vector3.ZERO
-var base_fov: float = 70.0
+@export_category("Controls")
+@export var mouse_sensitivity: float = 0.003
+@export var stick_sensitivity: float = 4.0
+@export var rotation_stiffness: float = 0.2 
+@export var auto_center_speed: float = 3.5
+@export var time_to_auto_center: float = 1.0
+@export var follow_lerp: float = 15.0
+
+var yaw: float = 0.0
+var pitch: float = -0.15
+var roll: float = 0.0
+var focus_point: Vector3
+var manual_timer: float = 0.0
+
+var _boost_offset: float = 0.0
+var _was_boosting: bool = false
+var _current_fov_punch: float = 0.0
+var _last_speed: float = 0.0
 
 func _ready() -> void:
-	if camera_node:
-		base_fov = camera_node.fov
 	top_level = true
+	fov = base_fov
 	Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
 	if player:
-		yaw = player.global_rotation.y + PI
-	current_height = base_height
+		yaw = player.global_rotation.y 
+		focus_point = player.global_position + Vector3.UP * target_height
 
+# --- Mouse Input  ---
 func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventMouseMotion:
-		yaw -= event.relative.x * mouse_sensitivity
-		pitch -= event.relative.y * mouse_sensitivity
-		pitch = clamp(pitch, -0.6, 0.5)
+		var speed = player.velocity.length()
+		var speed_ratio = clamp(speed / max_speed_reference, 0.0, 1.0)
+		var sens_mult = lerp(1.0, rotation_stiffness, speed_ratio)
+		
+		yaw -= event.relative.x * mouse_sensitivity * sens_mult
+		pitch -= event.relative.y * mouse_sensitivity * sens_mult
+		pitch = clamp(pitch, -1.0, 0.4)
+		manual_timer = time_to_auto_center
 
 func _physics_process(delta: float) -> void:
-	if not player:
-		return
-
-	_handle_input(delta)
-	_auto_align(delta)
-	_update_transform(delta)
+	if not player: return
 	
-	var is_drifting = player.get("is_drifting") if "is_drifting" in player else false
-	var is_dashing = (player.get("dash_timer") > 0) if "dash_timer" in player else false
+	var is_boosting = player.get("dash_timer") > 0 if "dash_timer" in player else false
 	
-	_update_effects(delta, is_drifting or is_dashing)
+	_handle_stick_input(delta)
+	_handle_auto_center(delta)
+	_update_riders_logic(delta, is_boosting)
 
-func _handle_input(delta: float) -> void:
+# --- Analog Input ---
+func _handle_stick_input(delta: float) -> void:
 	var axis = Input.get_vector("camera_left", "camera_right", "camera_up", "camera_down")
 	if axis.length() > 0.1:
-		yaw -= axis.x * stick_sensitivity * delta
-		pitch -= axis.y * stick_sensitivity * delta
+		var speed = player.velocity.length()
+		var speed_ratio = clamp(speed / max_speed_reference, 0.0, 1.0)
+		var sens_mult = lerp(1.0, rotation_stiffness, speed_ratio)
+		
+		yaw -= axis.x * stick_sensitivity * delta * sens_mult
+		pitch -= axis.y * stick_sensitivity * delta * sens_mult
+		pitch = clamp(pitch, -1.0, 0.4)
+		manual_timer = time_to_auto_center
 
-func _auto_align(delta: float) -> void:
+# --- Auto Center ---
+func _handle_auto_center(delta: float) -> void:
+	if manual_timer > 0.0:
+		manual_timer -= delta
+		return
 	var speed = player.velocity.length()
 	if speed > 2.0:
-		var target_yaw = player.global_rotation.y + PI
-		# Scales alignment strength based on speed for that tight racing feel
-		var align_factor = clamp(speed / 20.0, 0.2, 1.0)
-		yaw = lerp_angle(yaw, target_yaw, auto_align_speed * align_factor * delta)
+		var target_yaw = atan2(player.velocity.x, player.velocity.z) + PI
+		yaw = lerp_angle(yaw, target_yaw, auto_center_speed * delta)
+		pitch = lerp(pitch, -0.15, (auto_center_speed * 0.5) * delta)
 
-func _update_transform(delta: float) -> void:
+func _update_riders_logic(delta: float, is_boosting: bool) -> void:
 	var speed = player.velocity.length()
-	var speed_ratio = clamp(speed / 50.0, 0.0, 1.0)
-
-	var target_dist = normal_distance
-	if speed < 1.0:
-		target_dist = idle_distance
-	else:
-		target_dist = lerp(normal_distance, max_distance, speed_ratio)
-
-	current_distance = lerp(current_distance, target_dist, distance_smooth * delta)
-	current_height = lerp(current_height, base_height, 10.0 * delta)
-
-	var dir = Vector3(sin(yaw) * cos(pitch), sin(pitch), cos(yaw) * cos(pitch)).normalized()
-	var target_pos = player.global_position + Vector3.UP * current_height
-	target_pos -= dir * current_distance
-
-	# Pulls camera slightly opposite to velocity for acceleration lag
-	var desired_offset = -player.velocity * 0.015
-	velocity_offset = velocity_offset.lerp(desired_offset, inertia_strength * delta)
-	target_pos += velocity_offset
-
-	global_position = global_position.lerp(target_pos, move_lerp_speed * delta)
+	var speed_ratio = clamp(speed / max_speed_reference, 0.0, 1.0)
 	
-	var actual_dist = global_position.distance_to(player.global_position)
-	if actual_dist > absolute_max_limit:
-		var back_dir = (global_position - player.global_position).normalized()
-		global_position = player.global_position + back_dir * absolute_max_limit
+	var acceleration = (speed - _last_speed) / delta
+	_last_speed = speed
 
-	var look_target = player.global_position + Vector3.UP * target_height
-	if speed > 2.0:
-		look_target += player.velocity.normalized() * look_ahead_strength * speed_ratio
+	if is_boosting and not _was_boosting:
+		_boost_offset = boost_distance_surge
+		_current_fov_punch = fov_boost_punch
+		
+	_was_boosting = is_boosting
+	_boost_offset = lerp(_boost_offset, 0.0, boost_return_speed * delta)
+	_current_fov_punch = lerp(_current_fov_punch, 0.0, (boost_return_speed * 0.6) * delta)
 
-	look_at(look_target, Vector3.UP)
+	var accel_fov_bonus = clamp(acceleration * acceleration_fov_influence, -5.0, 8.0)
+	var target_fov = base_fov + (speed_fov_boost * speed_ratio) + _current_fov_punch + accel_fov_bonus
+	var fov_lerp_weight = 8.0 if target_fov > fov else 3.0
+	fov = lerp(fov, target_fov, fov_lerp_weight * delta)
 
-	var turn_amount = wrapf((player.global_rotation.y + PI) - yaw, -PI, PI)
-	var is_drifting = player.get("is_drifting") if "is_drifting" in player else false
-	var drift_mult = drift_roll_multiplier if is_drifting else 1.0
+	var dynamic_height = target_height + (speed_ratio * height_speed_gain)
+	focus_point.x = player.global_position.x
+	focus_point.z = player.global_position.z
+	focus_point.y = lerp(focus_point.y, player.global_position.y + dynamic_height, follow_lerp * delta)
 
-	var target_roll = -turn_amount * turn_roll_strength * drift_mult
-	roll = lerp(roll, target_roll, 8.0 * delta)
-	
-	var view_dir = (look_target - global_position).normalized()
-	if view_dir.length() > 0.1:
-		global_transform.basis = global_transform.basis.rotated(view_dir, roll)
+	var forward_yaw = atan2(player.velocity.x, player.velocity.z) + PI
 
-func _update_effects(delta: float, is_boosted: bool) -> void:
-	if not camera_node: return
-	
-	var speed = player.velocity.length()
-	var speed_ratio = clamp(speed / 50.0, 0.0, 1.0)
-	
-	var target_fov = lerp(fov_idle, fov_speed, speed_ratio)
-	if is_boosted:
-		target_fov = fov_boost
-	
-	camera_node.fov = lerp(camera_node.fov, target_fov, fov_lerp_speed * delta)
-	
-	var target_quat = global_transform.basis.get_rotation_quaternion()
-	var current_quat = camera_node.global_transform.basis.get_rotation_quaternion()
-	camera_node.global_transform.basis = Basis(current_quat.slerp(target_quat, rotation_lerp_speed * delta))
+	if speed > lean_start_speed:
+		var lean_ratio = clamp((speed - lean_start_speed) / (max_speed_reference - lean_start_speed), 0.0, 1.0)
+		
+		var current_max_lean_rad = lerp(PI, deg_to_rad(max_lean_angle_degrees), lean_ratio)
 
-	camera_node.global_position = camera_node.global_position.lerp(global_position, 40.0 * delta)
+		var angle_diff = wrap_angle(yaw - forward_yaw)
+		
+		var clamped_diff = clamp(angle_diff, -current_max_lean_rad, current_max_lean_rad)
+		
+		yaw = forward_yaw + clamped_diff
+	# -------------------------------------------------------
+
+	var cam_basis = Basis.from_euler(Vector3(pitch, yaw, 0.0))
+	var final_dist = distance + _boost_offset
 	
-	if camera_node.global_position.distance_to(global_position) > 0.2:
-		camera_node.global_position = global_position
+	global_position = focus_point + (cam_basis.z * final_dist)
+	global_transform.basis = cam_basis
+
+func wrap_angle(angle: float) -> float:
+	while angle > PI: angle -= 2 * PI
+	while angle < -PI: angle += 2 * PI
+	return angle
