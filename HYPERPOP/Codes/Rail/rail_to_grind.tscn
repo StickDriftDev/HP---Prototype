@@ -13,7 +13,7 @@ point_count = 8
 curve = SubResource("Curve3D_sdtpv")
 script = ExtResource("1_pc1kh")
 
-[node name="CSGBox3D" type="CSGBox3D" parent="." unique_id=665980146]
+[node name="CSGBox3D" type="CSGBox3D" parent="." unique_id=665980146 groups=["rail"]]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.40751863, -0.23388195, -11.47525)
 use_collision = true
 collision_mask = 15

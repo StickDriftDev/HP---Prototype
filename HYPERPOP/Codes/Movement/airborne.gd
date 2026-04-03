@@ -1,7 +1,7 @@
 extends BoardState
 class_name Airborne
 
-@export var grind_rail_cast:ShapeCast3D
+@export var grind_rail_cast:RayCast3D
 @onready var player: BoardController = get_parent().get_parent()
 
 var air_time_bonus: float = 0.0

@@ -9401,9 +9401,6 @@ size = Vector3(1.21, 0.185, 3.635)
 transparency = 1
 albedo_color = Color(0.3019608, 0.5411765, 0.9254902, 0.25882354)
 
-[sub_resource type="BoxShape3D" id="BoxShape3D_ws6dg"]
-size = Vector3(1, 1, 4)
-
 [node name="BoardController" type="CharacterBody3D" unique_id=723564920 node_paths=PackedStringArray("loco_state_machine", "board_target", "Rider_Model", "Cam", "PlayerSFX")]
 collision_mask = 127
 floor_block_on_wall = false
@@ -9438,12 +9435,12 @@ script = ExtResource("3_70pc1")
 
 [node name="Airborne" type="Node" parent="BoardStateMachine" unique_id=1274368429 node_paths=PackedStringArray("grind_rail_cast")]
 script = ExtResource("2_vjvt4")
-grind_rail_cast = NodePath("../../GrindRail")
+grind_rail_cast = NodePath("../../GrindRays/RayCast3D")
 
 [node name="TrickAirborne" type="Node" parent="BoardStateMachine" unique_id=1228076063]
 script = ExtResource("7_436y7")
 
-[node name="TrickAirborne" type="Node" parent="BoardStateMachine" unique_id=1228076063]
+[node name="TrickAirborne2" type="Node" parent="BoardStateMachine" unique_id=1531893842]
 script = ExtResource("7_436y7")
 
 [node name="Wall_Running" type="Node" parent="BoardStateMachine" unique_id=525395192]
@@ -9453,13 +9450,12 @@ script = ExtResource("6_hwsgt")
 script = ExtResource("8_mlmxm")
 metadata/_custom_type_script = "uid://covyts21cgpi6"
 
-[node name="Rail_Glide" type="Node" parent="BoardStateMachine" unique_id=1209737452 node_paths=PackedStringArray("grind_rail_cast", "grindrays")]
+[node name="Rail_Glide" type="Node" parent="BoardStateMachine" unique_id=1209737452 node_paths=PackedStringArray("grindrays")]
 script = ExtResource("9_436y7")
-grind_rail_cast = NodePath("../../GrindRail")
 grindrays = NodePath("../../GrindRays")
 metadata/_custom_type_script = "uid://covyts21cgpi6"
 
-[node name="TrickManager" type="Node3D" parent="." unique_id=350297660]
+[node name="TrickManager2" type="Node3D" parent="." unique_id=1328867744]
 script = ExtResource("10_fwmga")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=1370903136]
@@ -9713,13 +9709,11 @@ stream = ExtResource("22_hwsgt")
 [node name="Sound_Brake" type="AudioStreamPlayer3D" parent="Sound" unique_id=1272357074]
 stream = ExtResource("23_sek2j")
 
-[node name="GrindRail" type="ShapeCast3D" parent="." unique_id=1182265522]
-shape = SubResource("BoxShape3D_ws6dg")
-target_position = Vector3(0, -1, 0.1)
-
 [node name="GrindRays" type="Node3D" parent="." unique_id=1028415510]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.55313194, 0)
 
 [node name="RayCast3D" type="RayCast3D" parent="GrindRays" unique_id=1556532918]
+collide_with_areas = true
 
 [editable path="RyderGear"]
 [editable path="RyderGear/RyderModel"]

@@ -3,6 +3,7 @@
 [ext_resource type="Script" uid="uid://dhnirr65a1lb1" path="res://HYPERPOP/Codes/Rail/rail_follower.gd" id="1_2cw1k"]
 
 [node name="RailFollower" type="PathFollow3D" unique_id=1096949513 groups=["rail follower"]]
+rotation_mode = 4
 script = ExtResource("1_2cw1k")
 
 [node name="CSGSphere3D" type="CSGSphere3D" parent="." unique_id=690095899]
