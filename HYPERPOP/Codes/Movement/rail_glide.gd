@@ -21,6 +21,7 @@ func exit_state() -> void:
 	print_debug("Exit Rail_Glide")
 	pass
 
+
 func physics_process(delta: float) -> void:
 	player._read_input(delta)
 	rail_grinding(delta)
@@ -64,7 +65,7 @@ func update_player_position(delta):
 
 func detach_from_rail():
 	detached_from_rail = true
-	player.velocity.y = player.max_jump_force #jump_velocity
+	player.velocity.y = player.detach_jump_force #jump_velocity
 	rail_grind_node.detach = false
 	reset_player_states_after_detach()
 
@@ -89,8 +90,11 @@ func is_facing_same_direction(node, path_follow: PathFollow3D) -> bool:
 	return abs(dot_product - 1.0) < THRESHOLD
 
 func grind_timer(delta):
+	print_debug("Timer", player.countdown_for_next_grind_time_left)
 	if player.start_grind_timer:
+		print_debug("1 Timer after", player.countdown_for_next_grind_time_left)
 		if player.countdown_for_next_grind_time_left > 0:
+			print_debug("Timer after", player.countdown_for_next_grind_time_left)
 			player.countdown_for_next_grind_time_left -= delta
 			if player.countdown_for_next_grind_time_left <= 0:
 				if Input.is_action_pressed("forward"):
