@@ -113,7 +113,7 @@ var boost_regen_pendente: float = 0.0
 @onready var countdown_for_next_grind_time_left = 1.0
 @onready var grind_timer_complete = true
 @onready var start_grind_timer = false
-@export var grindrays: Node3D
+@export var grindrays: ShapeCast3D
 @export var lerp_speed = 40
 @export var detach_jump_force: float = 35.0
 

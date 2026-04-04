@@ -46,14 +46,13 @@ func rail_grinding(delta):
 
 #enables you to use multiple rays
 func get_valid_grind_ray():
-	for grind_ray in player.grindrays.get_children():
-		print_debug("if ", grind_ray.is_colliding(), grind_ray.get_collider(), grind_ray.get_collider().is_in_group("rail"))
-		if grind_ray.is_colliding() and grind_ray.get_collider() and grind_ray.get_collider().is_in_group("rail"):
-			return grind_ray
+	print_debug("if ", player.grindrays.is_colliding(), player.grindrays.get_collider(0), player.grindrays.get_collider(0).is_in_group("rail"))
+	if player.grindrays.is_colliding() and player.grindrays.get_collider(0) and player.grindrays.get_collider(0).is_in_group("rail"):
+		return player.grindrays
 	return null
 
 func start_grinding(grind_ray, delta):
-	var grind_rail = grind_ray.get_collider().get_parent()
+	var grind_rail = grind_ray.get_collider(0).get_parent()
 	player.gravity_mul = 0.0
 	print_debug("grind_rail", grind_rail)
 	print_debug(player.global_position)
