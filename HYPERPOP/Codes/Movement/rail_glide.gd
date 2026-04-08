@@ -15,6 +15,7 @@ func enter_state() -> void:
 	print_debug("Enter Rail_Glide")
 	if player.detach_jump_force < player.min_jump_force or player.detach_jump_force > player.max_jump_force:
 		push_warning("detach_jump_force ", player.detach_jump_force," is less or more than min or max ")
+	player.start_grind_timer = true
 
 
 func exit_state() -> void:
@@ -87,20 +88,6 @@ func is_facing_same_direction(node, path_follow: PathFollow3D) -> bool:
 	var dot_product = player_forward.dot(path_follow_forward)
 	const THRESHOLD = 0.5
 	return abs(dot_product - 1.0) < THRESHOLD
-
-func grind_timer(delta):
-	print_debug("Timer", player.countdown_for_next_grind_time_left)
-	if player.start_grind_timer:
-		print_debug("1 Timer after", player.countdown_for_next_grind_time_left)
-		if player.countdown_for_next_grind_time_left > 0:
-			print_debug("Timer after", player.countdown_for_next_grind_time_left)
-			player.countdown_for_next_grind_time_left -= delta
-			if player.countdown_for_next_grind_time_left <= 0:
-				if Input.is_action_pressed("forward"):
-					Input.action_release("forward")
-				player.countdown_for_next_grind_time_left = player.countdown_for_next_grind
-				player.grind_timer_complete = true
-				player.start_grind_timer = false
 
 func find_nearest_rail_follower(player_position, rail_node):
 	var nearest_node = null

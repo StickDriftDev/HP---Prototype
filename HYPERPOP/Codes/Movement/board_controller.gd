@@ -115,7 +115,7 @@ var boost_regen_pendente: float = 0.0
 @onready var start_grind_timer = false
 @export var grindrays: ShapeCast3D
 @export var lerp_speed = 40
-@export var detach_jump_force: float = 35.0
+@export var detach_jump_force: float = 12.0
 
 # =================================================
 # DEBUG
@@ -257,6 +257,8 @@ func _physics_process(delta: float) -> void:
 	was_on_floor = is_on_floor()
 	if was_on_floor:
 		last_ground_position = global_position
+	
+	grind_timer(delta)
 
 # =================================================
 # TRICK RAMP RECEPTION LOGIC
@@ -528,6 +530,19 @@ func ChangeVelocity(vec: Vector3, force: float) -> void:
 func _update_air_pitch(delta: float) -> void:
 	var target = inp_pitch * deg_to_rad(air_pitch_max_angle) if not is_on_floor() else 0.0
 	current_air_pitch = lerp(current_air_pitch, target, (air_pitch_responsiveness if not is_on_floor() else air_pitch_return_speed) * delta)
+
+# =================================================
+# Rail Grinding Timer
+func grind_timer(delta):
+	if start_grind_timer:
+		if countdown_for_next_grind_time_left > 0:
+			countdown_for_next_grind_time_left -= delta
+			if countdown_for_next_grind_time_left <= 0:
+				if Input.is_action_pressed("forward"):
+					Input.action_release("forward")
+				countdown_for_next_grind_time_left = countdown_for_next_grind
+				grind_timer_complete = true
+				start_grind_timer = false
 
 func _update_visuals_and_juice(delta: float) -> void:
 	current_visual_scale = current_visual_scale.lerp(target_visual_scale, 15.0 * delta)
