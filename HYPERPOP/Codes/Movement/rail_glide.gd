@@ -32,7 +32,6 @@ func physics_process(delta: float) -> void:
 func rail_grinding(delta):
 	if player.grind_timer_complete:
 		var grind_ray = get_valid_grind_ray()
-		print_debug("grind_ray", grind_ray)
 		if grind_ray:
 			start_grinding(grind_ray, delta)
 	
@@ -45,10 +44,11 @@ func rail_grinding(delta):
 	if rail_grind_node.detach or Input.is_action_pressed("jump"):
 		detach_from_rail()
 
-#enables you to use multiple rays
+# Might eventually remove, it already check in other State change
 func get_valid_grind_ray():
-	print_debug("if ", player.grindrays.is_colliding(), player.grindrays.get_collider(0), player.grindrays.get_collider(0).is_in_group("rail"))
-	if player.grindrays.is_colliding() and player.grindrays.get_collider(0) and player.grindrays.get_collider(0).is_in_group("rail"):
+	# Can you put a comment if you know? I don't know why get_collider need (0),
+	# grindrays is a ShapeCast3D
+	if player.grindrays.is_colliding() and player.grindrays.get_collider(0).is_in_group("rail"):
 		return player.grindrays
 	return null
 

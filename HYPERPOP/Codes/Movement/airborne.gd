@@ -62,7 +62,7 @@ func _update_loco_state() -> void:
 		else:
 			loco_state_machine.change_state("Grounded")
 	
-	if player.grindrays.is_colliding() and player.grindrays.get_collider(0) and player.grindrays.get_collider(0).is_in_group("rail") and player.start_grind_timer == false:
+	if player.grindrays.is_colliding() and player.grindrays.get_collider(0).is_in_group("rail") and player.start_grind_timer == false:
 		loco_state_machine.change_state("Rail_Glide")
 
 # Rail Landing and board state change
