@@ -55,8 +55,6 @@ func get_valid_grind_ray():
 func start_grinding(grind_ray, delta):
 	var grind_rail = grind_ray.get_collider(0).get_parent()
 	player.gravity_mul = 0.0
-	print_debug("grind_rail", grind_rail)
-	print_debug(player.global_position)
 	rail_grind_node = find_nearest_rail_follower(player.global_position, grind_rail)
 	player.position = lerp(player.position, rail_grind_node.position, delta * player.lerp_speed)
 
