@@ -9402,7 +9402,7 @@ transparency = 1
 albedo_color = Color(0.3019608, 0.5411765, 0.9254902, 0.25882354)
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_ljel1"]
-size = Vector3(1, 1, 4.08)
+size = Vector3(1, 1.5, 4.08)
 
 [node name="BoardController" type="CharacterBody3D" unique_id=723564920 node_paths=PackedStringArray("loco_state_machine", "board_target", "Rider_Model", "Cam", "PlayerSFX", "grindrays")]
 collision_mask = 127
@@ -9439,7 +9439,7 @@ script = ExtResource("3_70pc1")
 
 [node name="Airborne" type="Node" parent="BoardStateMachine" unique_id=1274368429 node_paths=PackedStringArray("grind_rail_cast")]
 script = ExtResource("2_vjvt4")
-grind_rail_cast = NodePath("../../GrindRays/RayCast3D")
+grind_rail_cast = NodePath("")
 
 [node name="TrickAirborne" type="Node" parent="BoardStateMachine" unique_id=1228076063]
 script = ExtResource("7_436y7")
@@ -9711,20 +9711,6 @@ stream = ExtResource("22_hwsgt")
 
 [node name="Sound_Brake" type="AudioStreamPlayer3D" parent="Sound" unique_id=1272357074]
 stream = ExtResource("23_sek2j")
-
-[node name="GrindRays" type="Node3D" parent="." unique_id=1028415510]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.55313194, 0)
-
-[node name="RayCast3D" type="RayCast3D" parent="GrindRays" unique_id=1556532918]
-collide_with_areas = true
-
-[node name="RayCast3D2" type="RayCast3D" parent="GrindRays" unique_id=1361431570]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.97365224)
-collide_with_areas = true
-
-[node name="RayCast3D3" type="RayCast3D" parent="GrindRays" unique_id=903128763]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -1.1141803)
-collide_with_areas = true
 
 [node name="ShapeCast3D" type="ShapeCast3D" parent="." unique_id=1934399983]
 shape = SubResource("BoxShape3D_ljel1")

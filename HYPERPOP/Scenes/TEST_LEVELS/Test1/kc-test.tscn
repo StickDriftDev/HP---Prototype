@@ -47,11 +47,10 @@ collision_mask = 7
 [node name="CollisionShape3D" type="CollisionShape3D" parent="Floor/StaticBody3D" unique_id=1561190252]
 shape = SubResource("ConcavePolygonShape3D_4w0cu")
 
-[node name="BoardController" parent="." unique_id=723564920 node_paths=PackedStringArray("grindrays") groups=["player"] instance=ExtResource("2_3wh3v")]
+[node name="BoardController" parent="." unique_id=723564920 groups=["player"] instance=ExtResource("2_3wh3v")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 14.103312, -5.4876366)
 collision_mask = 63
 ignore_align_mask = 63
-grindrays = NodePath("GrindRays")
 
 [node name="PlayerHud" type="Node" parent="." unique_id=302137040]
 
