@@ -1,6 +1,7 @@
 extends BoardState
 class_name RailGlide
 
+@export var rail_speed: float = 10
 
 @onready var player: BoardController = get_parent().get_parent()
 
@@ -44,19 +45,20 @@ func rail_grinding(delta):
 	if rail_grind_node.detach or Input.is_action_pressed("jump"):
 		detach_from_rail()
 
-# Might eventually remove, it already check in other State change
+
 func get_valid_grind_ray():
-	# Can you put a comment if you know? I don't know why get_collider need (0),
 	# grindrays is a ShapeCast3D
 	if player.grindrays.is_colliding() and player.grindrays.get_collider(0).is_in_group("rail"):
 		return player.grindrays
+	# Because it is in physics process, null is need for the if statement
 	return null
+
 
 func start_grinding(grind_ray, delta):
 	var grind_rail = grind_ray.get_collider(0).get_parent()
 	player.gravity_mul = 0.0
 	rail_grind_node = find_nearest_rail_follower(player.global_position, grind_rail)
-	player.position = lerp(player.position, rail_grind_node.position, delta * player.lerp_speed)
+	update_player_position(delta)
 
 func update_player_position(delta):
 	player.position = lerp(player.position, rail_grind_node.position, delta * player.lerp_speed)

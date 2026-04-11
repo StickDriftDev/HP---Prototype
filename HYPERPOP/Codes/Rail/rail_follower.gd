@@ -12,7 +12,8 @@ var local_starting_progress = 0.0
 @onready var direction_selected = false
 @onready var detach = false
 
-@export var move_speed = 8.0
+# Set the speed of the player on rail
+@export var move_speed: float = 40.0
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
