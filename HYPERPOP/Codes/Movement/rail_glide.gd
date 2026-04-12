@@ -10,6 +10,9 @@ class_name RailGlide
 #--RAIL GRINDING VARIABLES--
 var rail_grind_node = null
 var detached_from_rail: bool = false
+var player_previous_position: Vector3
+var set_location_timer: float = 1
+var location_timer: float = 0
 
 
 func enter_state() -> void:
@@ -17,6 +20,9 @@ func enter_state() -> void:
 	if player.detach_jump_force < player.min_jump_force or player.detach_jump_force > player.max_jump_force:
 		push_warning("detach_jump_force ", player.detach_jump_force," is less or more than min or max ")
 	player.start_grind_timer = true
+	
+	location_timer = set_location_timer
+	player_previous_position = player.global_position
 
 
 func exit_state() -> void:
@@ -29,7 +35,6 @@ func physics_process(delta: float) -> void:
 	rail_grinding(delta)
 
 
-#GRINDING
 func rail_grinding(delta):
 	if player.grind_timer_complete:
 		var grind_ray = get_valid_grind_ray()
@@ -59,6 +64,7 @@ func start_grinding(grind_ray, delta):
 	player.gravity_mul = 0.0
 	rail_grind_node = find_nearest_rail_follower(player.global_position, grind_rail)
 	update_player_position(delta)
+	look_ahead(delta)
 
 func update_player_position(delta):
 	player.position = lerp(player.position, rail_grind_node.position, delta * player.lerp_speed)
@@ -100,4 +106,9 @@ func find_nearest_rail_follower(player_position, rail_node):
 				nearest_node = node
 	return nearest_node
 
-#END GRINDING
+# Keep player looking ahead
+func look_ahead(delta: float) -> void:
+	if location_timer <= 0:
+		location_timer = set_location_timer
+		player_previous_position = player.global_position
+	pass

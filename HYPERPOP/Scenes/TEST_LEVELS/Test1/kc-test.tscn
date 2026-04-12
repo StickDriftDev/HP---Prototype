@@ -73,6 +73,9 @@ shadow_blur = 0.0
 
 [node name="RailToGrind" parent="." unique_id=1638617350 instance=ExtResource("5_jvh82")]
 
+[node name="RailToGrind2" parent="." unique_id=637234733 instance=ExtResource("5_jvh82")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 56.19023, -4.26612, -13.306213)
+
 [editable path="BoardController"]
 [editable path="BoardController/RyderGear"]
 [editable path="BoardController/RyderGear/RyderModel"]

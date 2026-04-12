@@ -1,0 +1,28 @@
+[gd_scene format=3 uid="uid://c836hphbhvdn6"]
+
+[ext_resource type="Script" uid="uid://clby8t2i5mire" path="res://HYPERPOP/Codes/Rail/rail_to_grind.gd" id="1_hdeel"]
+
+[sub_resource type="Curve3D" id="Curve3D_sdtpv"]
+_data = {
+"points": PackedVector3Array(0, 0, 0, 0, 0, 0, 0.3730433, 0, 0.042577267, 0, 0, 0, 0, 0, 0, 0.57909703, 0, -10.196352, 0, 0, 0, 0, 0, 0, 0.7033131, 0, -23.303844, 0, 0, 0, 0, 0, 0, 12.993411, 5.9225388, -23.19719, 0, 0, 0, 0, 0, 0, 16.617607, 7.995615, -23.19719, 0, 0, 0, 0, 0, 0, 24.465977, 12.49925, -23.19719, 0, 0, 0, 0, 0, 0, 26.971878, 14.02304, -22.98454, 0, 0, 0, 0, 0, 0, 26.247986, 16.587175, -19.755533, 0, 0, 0, 0, 0, 0, 25.754086, 17.671673, -17.761204, 0, 0, 0, 0, 0, 0, 25.206244, 19.765764, -15.20387, 0, 0, 0, 0, 0, 0, 24.01911, 23.453411, -9.730219, 0, 0, 0, 0, 0, 0, 23.280504, 25.409103, -6.660046),
+"tilts": PackedFloat32Array(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+}
+point_count = 12
+
+[node name="RailToGrind" type="Path3D" unique_id=1638617350]
+curve = SubResource("Curve3D_sdtpv")
+script = ExtResource("1_hdeel")
+
+[node name="CSGBox3D" type="CSGBox3D" parent="." unique_id=665980146 groups=["rail"]]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.40751863, -0.23388195, -11.47525)
+use_collision = true
+collision_mask = 15
+size = Vector3(1, 1, 23.9505)
+
+[node name="CSGBox3D" type="CSGBox3D" parent="CSGBox3D" unique_id=1198079367]
+transform = Transform3D(0.8772635, -0.48000914, 0, 0.48000914, 0.8772635, 0, 0, 0, 1, 13.290972, 6.8572206, -11.736687)
+size = Vector3(31.380676, 1, 1)
+
+[node name="CSGBox3D" type="CSGBox3D" parent="CSGBox3D/CSGBox3D" unique_id=515815168]
+transform = Transform3D(0.99350655, 0, 0.11377545, -0.064649165, 0.8228786, 0.5645275, -0.09362338, -0.5682172, 0.8175352, 16.20353, 6.1776066, 8.574016)
+size = Vector3(1, 1, 21.936401)
